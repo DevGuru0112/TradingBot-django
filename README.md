@@ -7,15 +7,15 @@ No Investment Advice
 		1. First create environment variables\
 	   	  `$env:FLASK_APP="gtm"`\
 	   	  `$env:FLASK_ENV="development"`\
-	  	  `$env:PYTHONDONTWRITEBYTECODE=1` (Ignore pyc file)\
+	  	  `$env:PYTHONDONTWRITEBYTECODE=1` (Ignore pyc file)
 
 		2. Run App\
-	  	  `flask run`\
+	  	  `flask run`
 	* For Mac Users
 		1. First create environment variables\
 		  `$env:FLASK_APP="gtm"`\
 	   	  `$env:FLASK_ENV="development"`\
-		  `$env:PYTHONDONTWRITEBYTECODE=1` (Ignore pyc file)\
+		  `$env:PYTHONDONTWRITEBYTECODE=1` (Ignore pyc file)
 		
 	        2. Run App\
-		  `flask run`\
+		  `flask run`
