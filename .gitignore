@@ -1,0 +1,7 @@
+
+.vscode/
+
+
+# Ignore Pycache files and dics
+__pycache__/
+*.pyc
