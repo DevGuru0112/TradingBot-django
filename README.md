@@ -4,7 +4,7 @@ No Investment Advice
 ## How to Run? ##
 * For Developers
 	* For Windows Users
-		1. First create environment variables\
+	1. First create environment variables\
 	   	  `$env:FLASK_APP="gtm"`\
 	   	  `$env:FLASK_ENV="development"`\
 	  	  `$env:PYTHONDONTWRITEBYTECODE=1` (Ignore pyc file)

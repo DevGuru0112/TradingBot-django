@@ -1,0 +1,3 @@
+# RSI
+
+* pick up 7-21-42 length of values (short-time / mid-time / long-time)
