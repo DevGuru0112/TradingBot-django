@@ -7,31 +7,12 @@ import time
 
 
 class Server:
-    
-    
-
-
-
     def start(self):
-        
+
         manager = Binance_API_Manager()
 
-        
-        trader = Trader(manager) 
-        # schedule = SafeScheduler()
+        trader = Trader(manager)
 
+        print("Server Started\n")
 
         trader.startTrade()
-        # while True:
-
-            
-
-        #     print("----")
-            
-        #     time.sleep(10)
-
-            
-
-
-
-
