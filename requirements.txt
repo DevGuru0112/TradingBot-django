@@ -1,0 +1,6 @@
+python-binance>= 0.50.7.9
+schedule>= 0.51.1.0
+apprise>= 0.50.9.1
+matplotlib>= 0.53.4.1
+numpy>= 0.51.20.2
+pandas>= 0.51.2.4
