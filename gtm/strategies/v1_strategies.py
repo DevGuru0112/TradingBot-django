@@ -7,10 +7,6 @@ import math
 import numpy as np
 
 
-
-
-
-
 class V1Strategies:
     def __init__(self, binance_manager: Binance_API_Manager, symbol):
         self.client = binance_manager.client
@@ -23,7 +19,6 @@ class V1Strategies:
 
         sp = 5
         sph = sp / 2
-
 
         # trader = TestTrader(self.symbol)
 
@@ -75,7 +70,7 @@ class V1Strategies:
         self.df["macd_score"] = 0
 
         for i, cnd in enumerate(df_list, start=0):
-            
+
             score = 0
 
             ## MACD VARIABLES

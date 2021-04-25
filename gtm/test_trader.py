@@ -1,4 +1,5 @@
 from datetime import datetime
+from .strategies.helper import *
 
 
 class TestTrader:
@@ -44,20 +45,21 @@ class TestTrader:
 
             sell_trade = self.trade_history[i]
 
-            print("= = = = = = = = = = = = = = = = = = = = = = = = = = =")
+            writeFile("= = = = = = = = = = = = = = = = = = = = = = = = = = =")
 
-            print(
+            writeFile(
                 "Buy price : {0}, coin_amount : {1}, Time : {2}\n".format(
                     buy_trade["price"], buy_trade["amount"], buy_trade["time"]
                 )
             )
-            print(
+
+            writeFile(
                 "Sell price : {0}, balance : {1}, Time : {2}".format(
                     sell_trade["price"], sell_trade["amount"], sell_trade["time"]
                 )
             )
 
-            print("= = = = = = = = = = = = = = = = = = = = = = = = = = =")
+            writeFile("= = = = = = = = = = = = = = = = = = = = = = = = = = =")
 
         wallet_balance = self.balance
 
@@ -66,7 +68,7 @@ class TestTrader:
 
         profit = (wallet_balance - 1000) / 1000
 
-        print(
+        writeFile(
             "Total Result :\nWallet Balance : {0}$\nProfit : {1} ".format(
                 wallet_balance, profit
             )
@@ -84,7 +86,7 @@ class TestTrader:
 
         score_diff = df["score"].diff().fillna(0)
 
-        print(
+        writeFile(
             "Macd : {0},Rsi : {1},Cci : {2}, Sma : {3}\nScore : {4} -  Score Diff : {5}".format(
                 df["macd_score"][i],
                 df["rsi_score"][i],

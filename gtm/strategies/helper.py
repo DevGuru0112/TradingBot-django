@@ -22,4 +22,15 @@ def strArrToIntArr_2d(s_arr: list):
     return ml
 
 
+def writeFile(text):
+    
+    f = open("output.txt","w")
+
+    f.write(text)
+
+    f.close()
+
+
+
+
 
