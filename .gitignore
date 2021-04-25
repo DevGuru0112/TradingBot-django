@@ -1,7 +1,9 @@
 
 .vscode/
 
+output.txt
 
 # Ignore Pycache files and dics
 __pycache__/
 *.pyc
+

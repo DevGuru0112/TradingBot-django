@@ -1,5 +1,7 @@
-def strArrToIntArr_2d(s_arr: list):
+import os
 
+
+def strArrToIntArr_2d(s_arr: list):
 
     # This function convert 2d str array to 2d int array
 
@@ -23,14 +25,14 @@ def strArrToIntArr_2d(s_arr: list):
 
 
 def writeFile(text):
-    
-    f = open("output.txt","w")
 
+    filename = "output.txt"
+
+    if os.path.exists(filename):
+        append_write = "a"  # append if already exists
+    else:
+        append_write = "w"  # make a new file if not
+
+    f = open(filename, append_write)
     f.write(text)
-
     f.close()
-
-
-
-
-

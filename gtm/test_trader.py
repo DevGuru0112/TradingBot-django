@@ -45,7 +45,7 @@ class TestTrader:
 
             sell_trade = self.trade_history[i]
 
-            writeFile("= = = = = = = = = = = = = = = = = = = = = = = = = = =")
+            writeFile("\n= = = = = = = = = = = = = = = = = = = = = = = = = = =\n")
 
             writeFile(
                 "Buy price : {0}, coin_amount : {1}, Time : {2}\n".format(
@@ -59,7 +59,7 @@ class TestTrader:
                 )
             )
 
-            writeFile("= = = = = = = = = = = = = = = = = = = = = = = = = = =")
+            writeFile("\n= = = = = = = = = = = = = = = = = = = = = = = = = = =\n")
 
         wallet_balance = self.balance
 
@@ -69,7 +69,7 @@ class TestTrader:
         profit = (wallet_balance - 1000) / 1000
 
         writeFile(
-            "Total Result :\nWallet Balance : {0}$\nProfit : {1} ".format(
+            "\nTotal Result :\nWallet Balance : {0}$\nProfit : {1}\n".format(
                 wallet_balance, profit
             )
         )
@@ -87,7 +87,7 @@ class TestTrader:
         score_diff = df["score"].diff().fillna(0)
 
         writeFile(
-            "Macd : {0},Rsi : {1},Cci : {2}, Sma : {3}\nScore : {4} -  Score Diff : {5}".format(
+            "\nMacd : {0},Rsi : {1},Cci : {2}, Sma : {3}\nScore : {4} -  Score Diff : {5}\n".format(
                 df["macd_score"][i],
                 df["rsi_score"][i],
                 df["cci_score"][i],

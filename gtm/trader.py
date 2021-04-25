@@ -1,6 +1,7 @@
 from .binance_api_manager import Binance_API_Manager
 from .strategies.v1_strategies import V1Strategies
 from .test_trader import TestTrader
+from .strategies.helper import *
 
 from pandas.core.common import SettingWithCopyWarning
 import time
@@ -27,8 +28,8 @@ class Trader:
                 trader.trade(ch3_df)
 
                 trader.calculate_profit()
-                print("-------")
-
+                
+                writeFile("\n= = = = = = = = = = = = = = = = = = = =\n")
                 #ch3_df.to_csv(r"C:\Users\\abdul\Desktop\output.csv", header=True, index=True)
                 time.sleep(10)
                 
