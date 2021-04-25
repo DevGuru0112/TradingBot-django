@@ -8,6 +8,8 @@ class TestTrader:
         self.coin_balance = 0
         self.parameter = parameter
         self.last_price = 0
+        self.last_action = None
+        self.loss_sens = 0.005  # 0.5% loss
 
     def buy(self, price: int, time):
 
@@ -19,7 +21,7 @@ class TestTrader:
             {"type": "buy", "amount": amount, "price": price, "time": time}
         )
 
-        self.last_price = price
+        self.last_action = "buy"
 
     def sell(self, price: int, time):
 
@@ -32,7 +34,7 @@ class TestTrader:
             {"type": "sell", "amount": total, "price": price, "time": time}
         )
 
-        self.last_price = price
+        self.last_action = "sell"
 
     def calculate_profit(self):
 
@@ -59,10 +61,7 @@ class TestTrader:
 
         wallet_balance = self.balance
 
-        print(self.last_price)
-        if len(self.trade_history) % 2 != 0:
-            print("sl")
-            print(self.last_price * self.coin_balance)
+        if self.last_action == "buy":
             wallet_balance = self.last_price * self.coin_balance
 
         profit = (wallet_balance - 1000) / 1000
@@ -73,29 +72,45 @@ class TestTrader:
             )
         )
 
-    def trade(self,df):
-        
-        i = len(df.index) - 1 
+    def trade(self, df):
+
+        i = len(df.index) - 1
+
         score = df["score"][i]
         price = df["close"][i]
+        time = df.index[i]
+
+        self.last_price = price
 
         score_diff = df["score"].diff().fillna(0)
 
-        print(score_diff[i])
+        print(
+            "Macd : {0},Rsi : {1},Cci : {2}, Sma : {3}\nScore : {4} -  Score Diff : {5}".format(
+                df["macd_score"][i],
+                df["rsi_score"][i],
+                df["cci_score"][i],
+                df["sma_score"][i],
+                score,
+                score_diff[i],
+            )
+        )
 
-        df["score_diff"] = score_diff
+        if self.last_action == "buy":
+            # If profit arrive -0.5%
+            # Coin will sell immediately
+            bc = self.trade_history[-1]["price"]
 
-        time = df.index[i]
-        if score > 50 and self.balance > 0:
-            self.buy(price, time)
+            if (price - bc) / bc <= -self.loss_sens:
+                self.sell(price, time)
 
-        # elif score < -35 and self.coin_balance > 0:
-        #     print("score_standart_sell")
-        #     self.sell(price)
+        else:
 
-        elif 50 >= score > 0 and score_diff[i] > 30 and self.balance > 0:
-            
-            self.buy(price, time)
+            if score > 30 and self.balance > 0:
+                self.buy(price, time)
 
-        elif score_diff[i] < -25 and self.coin_balance > 0:
-            self.sell(price, time)
+            elif 30 >= score > 0 and score_diff[i] > 30 and self.balance > 0:
+
+                self.buy(price, time)
+
+            elif score_diff[i] < -25 and self.coin_balance > 0:
+                self.sell(price, time)
