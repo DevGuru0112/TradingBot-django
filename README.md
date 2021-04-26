@@ -1,21 +1,33 @@
-# binance_gtm
-No Investment Advice
+# Binance GTM
+**No Investment Advice**
+
+
 
 ## How to Run? ##
-* For Developers
-	* For Windows Users
-	1. First create environment variables\
-	   	  `$env:FLASK_APP="gtm"`\
-	   	  `$env:FLASK_ENV="development"`\
-	  	  `$env:PYTHONDONTWRITEBYTECODE=1` (Ignore pyc file)
+Firstly, You need to install the required packages (NumPy, pandas, Talib, etc.). 
+For quick installing, the requirements.txt file will help. Check there is no error while installing.
 
-		2. Run App\
-	  	  `flask run`
-	* For Mac Users
-		1. First create environment variables\
-		  `$env:FLASK_APP="gtm"`\
-	   	  `$env:FLASK_ENV="development"`\
-		  `$env:PYTHONDONTWRITEBYTECODE=1` (Ignore pyc file)
-		
-	        2. Run App\
-		  `flask run`
+```python
+pip install -r requirements.txt
+```
+
+You can start this module after installing it.
+
+```python
+python -m gtm
+```
+
+## Notifications ##
+In this project, we are using [Apprise](https://github.com/caronc/apprise "Apprise Github"). If you are notifying the last actions of **GtmBot**🤖 , you can use Telegram, Discord, etc.
+ - [**Telegram Bot**](https://github.com/caronc/apprise/wiki/Notify_telegram "Telegram Notify")
+ - [**Discord Bot**](https://github.com/caronc/apprise/wiki/Notify_discord "Discord Notify")
+
+
+
+## Strategies ##
+* **3-minutes candle strategy**
+* **15-minutes candle strategy**
+
+## Checklist ##
+- **[x] 3 minutes candle strategy**
+- **[ ] 15 minutes candle strategy**
