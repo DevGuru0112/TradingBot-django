@@ -20,13 +20,13 @@ class Trader:
 
     def startTrade(self):
 
-        v1strategies = V1Strategies(self.manager, "BTTUSDT")
+        v1strategies = V1Strategies(self.manager, "DOGEUSDT")
 
         warnings.simplefilter(action="ignore", category=SettingWithCopyWarning)
 
         try:
 
-            trader = TestTrader("BTTUSDT")
+            trader = TestTrader("DOGEUSDT")
 
             while True:
 

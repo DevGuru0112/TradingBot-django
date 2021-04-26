@@ -161,23 +161,29 @@ class TestTrader:
         writeFile(info)
         nh.send_notification(info)
 
+        if score > 30 and self.balance > 0:
+
+            self.buy(price, time)
+
+            return None
+
+        elif 30 >= score > 0 and score_diff[i] > 30 and self.balance > 0:
+
+            self.buy(price, time)
+
+            return None
+
+        elif score_diff[i] < -15 and self.coin_balance > 0:
+
+            self.sell(price, time)
+
+            return None
+
         if self.last_action == "buy":
 
             # If profit arrive -0.5%
             # Coin will sell immediately
             bc = self.trade_history[-1]["price"]
 
-            if (price - bc) / bc <= - self.loss_sens:
-                self.sell(price, time)
-
-        else:
-
-            if score > 30 and self.balance > 0:
-                self.buy(price, time)
-
-            elif 30 >= score > 0 and score_diff[i] > 30 and self.balance > 0:
-
-                self.buy(price, time)
-
-            elif score_diff[i] < -15 and self.coin_balance > 0:
+            if (price - bc) / bc <= -self.loss_sens:
                 self.sell(price, time)

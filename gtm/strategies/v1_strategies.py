@@ -11,7 +11,7 @@ class V1Strategies:
     def __init__(self, binance_manager: Binance_API_Manager, symbol):
         self.client = binance_manager.client
         self.symbol = symbol
-        self.limit = 100
+        self.limit = 101
 
     def ch3mGetSignal(self):
 
@@ -19,8 +19,6 @@ class V1Strategies:
 
         sp = 5
         sph = sp / 2
-
-        # trader = TestTrader(self.symbol)
 
         # GENERATE SEQUENTLY CHAIN MODEL (THINK ABOUT IT)
 
@@ -46,13 +44,11 @@ class V1Strategies:
         ## RSI Variables
 
         rsi_diffs = self.df["rsi"].diff().fillna(0)
-
         sorted_rsi_diffs = rsi_diffs.sort_values().tolist()
 
         ## CCI Variables
 
         cci_diffs = self.df["cci"].diff().fillna(0)
-
         sorted_cci_diffs = cci_diffs.sort_values().tolist()
 
         ## SMA Variables
@@ -78,6 +74,7 @@ class V1Strategies:
             idx = sorted_d.index(diff) * (20 / self.limit)
 
             trend_momentum = 0
+
 
             ## ----------------  MACD SCORE IMPLEMENTATION  ----------------
 
@@ -142,6 +139,7 @@ class V1Strategies:
             cci_v = self.df["cci"][i]
             cci_diff_v = cci_diffs[i]
 
+            
             idx = sorted_cci_diffs.index(cci_diff_v) * (10 / self.limit)
 
             if cci_v > 100:
@@ -232,10 +230,3 @@ class V1Strategies:
             self.df["score"][i] = score
 
         return self.df
-
-        # trader.trade(self.df)
-        # self.df["score_diff"] = self.df["score"].diff().fillna(0)
-
-        # trader.calculate_profit()
-
-        # self.df.to_csv(r"C:\Users\\abdul\Desktop\output.csv", header=True, index=True)
