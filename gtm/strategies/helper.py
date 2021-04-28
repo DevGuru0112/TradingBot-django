@@ -1,5 +1,7 @@
 import os
 
+output_dir = "output/"
+
 
 def strArrToIntArr_2d(s_arr: list):
 
@@ -26,7 +28,7 @@ def strArrToIntArr_2d(s_arr: list):
 
 def writeFile(text):
 
-    filename = "output.txt"
+    filename = output_dir + "output.txt"
 
     if os.path.exists(filename):
         append_write = "a"  # append if already exists
@@ -34,5 +36,7 @@ def writeFile(text):
         append_write = "w"  # make a new file if not
 
     f = open(filename, append_write)
+
     f.write(text)
+
     f.close()

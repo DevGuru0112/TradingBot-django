@@ -4,7 +4,6 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 from .analyzerUtils import AnalyzerUtils
 
-import talib
 
 PERIOD_5 = 5
 PERIOD_7 = 7
@@ -36,7 +35,6 @@ class Indicators(AnalyzerUtils):
         ema_p=SHORT_TERM_PERIOD,
         cci_p=PERIOD_20,
     ):
-
 
         self.MACD()
         self.RSI(rsi_p)
@@ -84,7 +82,7 @@ class Indicators(AnalyzerUtils):
 
         return macd
 
-    def RSI(self, n):
+    def RSI(self, window):
         """
 
         The Relative Strength Index (RSI) is a momentum indicator which is
@@ -104,9 +102,28 @@ class Indicators(AnalyzerUtils):
 
         """
 
+        df = self.df
+
         close = self.df.close
 
-        rsi = talib.RSI(close)
+        delta = close.diff().dropna()
+
+        u = delta * 0
+        d = u.copy()
+        u[delta > 0] = delta[delta > 0]
+        d[delta < 0] = -delta[delta < 0]
+
+        u[u.index[window - 1]] = np.mean(u[:window])  # first value is sum of avg gains
+        u = u.drop(u.index[: (window - 1)])
+
+        d[d.index[window - 1]] = np.mean(d[:window])  # first value is sum of avg losses
+        d = d.drop(d.index[: (window - 1)])
+
+        rs = (
+            pd.DataFrame.ewm(u, com=window - 1, adjust=False).mean()
+            / pd.DataFrame.ewm(d, com=window - 1, adjust=False).mean()
+        )
+        rsi = 100 - 100 / (1 + rs)
 
         self.df["rsi"] = rsi
 
@@ -142,7 +159,6 @@ class Indicators(AnalyzerUtils):
         sma = prices.rolling(n, min_periods=MIN_PERIOD).mean()
 
         self.df["sma_" + str(n)] = sma
-
 
         return sma
 

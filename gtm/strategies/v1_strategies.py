@@ -3,6 +3,8 @@ from binance.exceptions import BinanceAPIException, BinanceRequestException
 from datetime import datetime
 from .analyzers.indicators import Indicators
 from ..logger import Logger
+from binance.client import Client
+from .dev_helper import write_excel
 
 import pandas as pd
 
@@ -17,8 +19,6 @@ class V1Strategies:
 
     def ch3mGetSignal(self):
 
-        interval = "3m"
-
         sp = 5
         sph = sp / 2
 
@@ -30,10 +30,11 @@ class V1Strategies:
         candles = None
 
         try:
-
             # If goes something wrong! return none
             candles = self.client.get_klines(
-                symbol=self.symbol, interval=interval, limit=self.limit
+                symbol=self.symbol,
+                interval=Client.KLINE_INTERVAL_3MINUTE,
+                limit=self.limit,
             )
 
         except (BinanceAPIException, BinanceRequestException) as e:
@@ -41,7 +42,6 @@ class V1Strategies:
             logger.error(e)
 
             return pd.DataFrame()
-
 
         indicators = Indicators(self.symbol, candles)
 
@@ -241,4 +241,5 @@ class V1Strategies:
 
             self.df["score"][i] = score
 
+        # write_excel(self.df, "gtm_score", "gtm")
         return self.df

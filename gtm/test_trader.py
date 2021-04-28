@@ -158,9 +158,11 @@ class TestTrader:
             score_diff[i],
         )
 
+
+
         writeFile(info)
         nh.send_notification(info)
-        
+
         if score > 40 and self.balance > 0:
 
             self.buy(price, time)
