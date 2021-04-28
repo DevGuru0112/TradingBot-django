@@ -8,7 +8,9 @@ from .notifications import NotificationHandler
 from pandas.core.common import SettingWithCopyWarning
 import time
 import warnings
+import traceback
 
+import pandas as pd
 
 logger = Logger("trader")
 nh = NotificationHandler()
@@ -32,13 +34,19 @@ class Trader:
 
                 ch3_df = v1strategies.ch3mGetSignal()
 
+                if ch3_df.empty is True:
+                    time.sleep(1)
+                    continue
+
+
                 trader.trade(ch3_df)
 
                 trader.calculate_profit()
 
                 writeFile("\n= = = = = = = = = = = = = = = = = = = =\n")
-                
+
                 time.sleep(10)
 
         except Exception as e:
+            traceback.print_exception(type(e), e, e.__traceback__)
             logger.error(e)

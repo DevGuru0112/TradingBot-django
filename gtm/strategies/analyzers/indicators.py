@@ -36,6 +36,8 @@ class Indicators(AnalyzerUtils):
         ema_p=SHORT_TERM_PERIOD,
         cci_p=PERIOD_20,
     ):
+
+
         self.MACD()
         self.RSI(rsi_p)
         self.SMA(sma1)
@@ -140,6 +142,7 @@ class Indicators(AnalyzerUtils):
         sma = prices.rolling(n, min_periods=MIN_PERIOD).mean()
 
         self.df["sma_" + str(n)] = sma
+
 
         return sma
 

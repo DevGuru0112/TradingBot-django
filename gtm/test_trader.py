@@ -160,14 +160,14 @@ class TestTrader:
 
         writeFile(info)
         nh.send_notification(info)
-
-        if score > 30 and self.balance > 0:
+        
+        if score > 40 and self.balance > 0:
 
             self.buy(price, time)
 
             return None
 
-        elif 30 >= score > 0 and score_diff[i] > 30 and self.balance > 0:
+        elif 40 >= score > 0 and score_diff[i] > 30 and self.balance > 0:
 
             self.buy(price, time)
 

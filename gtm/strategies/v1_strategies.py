@@ -1,10 +1,12 @@
 from ..binance_api_manager import Binance_API_Manager
+from binance.exceptions import BinanceAPIException, BinanceRequestException
 from datetime import datetime
 from .analyzers.indicators import Indicators
-from ..test_trader import TestTrader
+from ..logger import Logger
 
-import math
-import numpy as np
+import pandas as pd
+
+logger = Logger("strategies")
 
 
 class V1Strategies:
@@ -25,9 +27,21 @@ class V1Strategies:
         # example: first RSI and CCI controlling and generating a score for depending on movement
         # after that MACD Controlling and generating a score depending on movement with RSI/CCI score !!!
 
-        candles = self.client.get_klines(
-            symbol=self.symbol, interval=interval, limit=self.limit
-        )
+        candles = None
+
+        try:
+
+            # If goes something wrong! return none
+            candles = self.client.get_klines(
+                symbol=self.symbol, interval=interval, limit=self.limit
+            )
+
+        except (BinanceAPIException, BinanceRequestException) as e:
+
+            logger.error(e)
+
+            return pd.DataFrame()
+
 
         indicators = Indicators(self.symbol, candles)
 
@@ -74,7 +88,6 @@ class V1Strategies:
             idx = sorted_d.index(diff) * (20 / self.limit)
 
             trend_momentum = 0
-
 
             ## ----------------  MACD SCORE IMPLEMENTATION  ----------------
 
@@ -139,7 +152,6 @@ class V1Strategies:
             cci_v = self.df["cci"][i]
             cci_diff_v = cci_diffs[i]
 
-            
             idx = sorted_cci_diffs.index(cci_diff_v) * (10 / self.limit)
 
             if cci_v > 100:

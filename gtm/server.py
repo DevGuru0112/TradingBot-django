@@ -7,6 +7,7 @@ import time
 
 
 class Server:
+
     def start(self):
 
         manager = Binance_API_Manager()
