@@ -1,6 +1,7 @@
-import logging.handlers
-
 from .notifications import NotificationHandler
+
+import logging.handlers
+import traceback
 
 
 class Logger:

@@ -5,3 +5,5 @@ class Config:
     API_SECRET_KEY = "4KNuGFz7PGbGeZ7QorTKqRHAl8hNPFINuaE9xjl6a2FWZqpap7BHsL6rsxYaYVJ3"
 
     PORT = 5500
+
+    MONGO_URI = "mongodb+srv://abdullahbodur:bodur123@unityeducation.opepq.mongodb.net/binance_gtm?retryWrites=true&w=majority"

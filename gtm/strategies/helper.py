@@ -1,4 +1,13 @@
+from ..data.logger import Logger
+from ..data.database.model.Trade import Trade
+from types import SimpleNamespace
+
+import traceback
+import json
 import os
+
+
+logger = Logger("trader")
 
 output_dir = "output/"
 
@@ -26,9 +35,9 @@ def strArrToIntArr_2d(s_arr: list):
     return ml
 
 
-def writeFile(text):
+def writeFile(text, filename):
 
-    filename = output_dir + "output.txt"
+    filename = output_dir + filename + ".txt"
 
     if os.path.exists(filename):
         append_write = "a"  # append if already exists
@@ -40,3 +49,4 @@ def writeFile(text):
     f.write(text)
 
     f.close()
+

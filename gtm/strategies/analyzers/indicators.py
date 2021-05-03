@@ -102,11 +102,11 @@ class Indicators(AnalyzerUtils):
 
         """
 
-        df = self.df
-
         close = self.df.close
 
         delta = close.diff().dropna()
+
+        self.df["change"] = delta
 
         u = delta * 0
         d = u.copy()

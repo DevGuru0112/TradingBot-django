@@ -1,13 +1,14 @@
 import logging
 import datetime
 from traceback import format_exc
-from schedule import Scheduler,Job
+from schedule import Scheduler, Job
+
 
 class SafeScheduler(Scheduler):
-    
+
     """
 
-    An implementation of Scheduler that catches jobs that fail,logs their 
+    An implementation of Scheduler that catches jobs that fail,logs their
     exception traceback as errors, and keeps going.
 
     Use this to run jobs that may or may not crash without worrying about
@@ -16,28 +17,26 @@ class SafeScheduler(Scheduler):
 
     """
 
-    def __init__(self,logger: logging.Logger,rerun_immediately = True):
+    def __init__(self, logger: logging.Logger, rerun_immediately=True):
 
         self.logger = logger
-        self.rerun_immediately= rerun_immediately 
+        self.rerun_immediately = rerun_immediately
 
         super().__init__()
 
-
-    def _run_job(self,job:Job):
+    def _run_job(self, job: Job):
 
         try:
             super()._run_job(job)
 
         except Exception:
 
-            self.logger.error(f"Error while {next(iter(job.tags))}...\n{format_exc()}") 
-            
-            job.last_run = datetime.datetime.now()
+            self.logger.error(f"Error while {next(iter(job.tags))}...\n{format_exc()}")
 
+            job.last_run = datetime.datetime.now()
 
             if not self.rerun_immediately:
 
-                # Reschedule the job before the next schedule                
+                # Reschedule the job before the next schedule
 
                 job._schedule_next_run()

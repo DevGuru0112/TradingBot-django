@@ -1,8 +1,8 @@
-from ..binance_api_manager import Binance_API_Manager
+from ..trader.binance_api_manager import Binance_API_Manager
 from binance.exceptions import BinanceAPIException, BinanceRequestException
 from datetime import datetime
 from .analyzers.indicators import Indicators
-from ..logger import Logger
+from ..data.logger import Logger
 from binance.client import Client
 from .dev_helper import write_excel
 
@@ -27,6 +27,11 @@ class V1Strategies:
         # example: first RSI and CCI controlling and generating a score for depending on movement
         # after that MACD Controlling and generating a score depending on movement with RSI/CCI score !!!
 
+        # TODO #1 => calculate all of 3m row changes. And calculate how much increase klines
+        # TODO #1 => and how much decrease klines which is determined on interval.
+        # TODO #1 => calculate all of increased klines average. Example 0.25% increase is average of all increased klines.
+        # TODO #1 => if current increase value is bigger than average. It is possible going up
+
         candles = None
 
         try:
@@ -38,7 +43,8 @@ class V1Strategies:
             )
 
         except (BinanceAPIException, BinanceRequestException) as e:
-
+            
+            traceback.print_exception(type(e), e, e.__traceback__)
             logger.error(e)
 
             return pd.DataFrame()
@@ -241,5 +247,5 @@ class V1Strategies:
 
             self.df["score"][i] = score
 
-        # write_excel(self.df, "gtm_score", "gtm")
+        #write_excel(self.df, "gtm_score", "gtm")
         return self.df
