@@ -13,12 +13,11 @@ loss_sens = 0.0005  # 0.5% loss
 
 
 class TestTrader:
-    def __init__(self, spot, coin):
-
+    def __init__(self, coin, spot, trade_history, parity):
+        self.trade_history = trade_history
         self.spot = spot
         self.coin = coin
-        self.usdt = spot["wallet"][coin.parity]["amount"]
-        self.coin_balance = spot["wallet"][coin.name]["amount"]
+        self.parity = spot[parity]
         self.last_price = 0
         self.last_action = None
 
@@ -38,21 +37,25 @@ class TestTrader:
 
         """
 
-        amount = (self.usdt / price) * fee  # 0.075 fee
+        amount = (self.parity.amount / price) * fee  # 0.075 fee
 
         self.usdt = 0
 
-        self.coin_balance = amount
+        trade = Trade(None, self.coin.name, self.parity.name, amount, price)
 
-        trade = Trade(amount, price)
+        self.parity.amount = 0
+        self.coin.amount = amount
 
-        self.spot["wallet"] = {
-            self.coin.parity: {"amount": 0},
-            self.coin.name: {"amount": amount},
-        }
+        self.parity.save()
+        self.coin.save()
+        trade.insert()
 
-        self.spot["trade_history"].append(trade)
+        # self.spot["wallet"] = {
+        #     self.coin.parity: {"amount": 0},
+        #     self.coin.name: {"amount": amount},
+        # }
 
+        self.trade_history.append(trade)
 
         self.last_action = "buy"
 
@@ -72,18 +75,23 @@ class TestTrader:
 
         """
 
-        total = (self.coin_balance * price) * fee  # 0.075 fee
+        total = (self.coin.amount * price) * fee  # 0.075 fee
 
-        self.usdt = total
+        self.parity.amount = total
 
-        self.coin_balance = 0
+        self.coin.amount = 0
 
-        self.spot["trade_history"][-1].sell(price, total)
+        last_trade = self.trade_history[-1]
 
-        self.spot["wallet"] = {
-            self.coin.parity: {"amount": self.usdt},
-            self.coin.name: {"amount": 0},
-        }
+        last_trade.sell(price, total)
+
+        last_trade.save()
+
+        self.coin.save()
+
+        self.parity.save()
+
+        self.trade_history[-1] = last_trade
 
         self.last_action = "sell"
 
@@ -100,10 +108,10 @@ class TestTrader:
             - None
         """
 
-        wallet_balance = self.usdt
+        wallet_balance = self.parity.amount
 
         if wallet_balance == 0:
-            wallet_balance = self.last_price * self.coin_balance * fee
+            wallet_balance = self.last_price * self.coin.amount * fee
 
         profit = (wallet_balance - 1000) / 10
 
@@ -152,30 +160,34 @@ class TestTrader:
 
         nh.send_notification(info)
 
-        if score > 40 and self.usdt > 0:
+        parity_amount = self.parity.amount
+        coin_amount = self.coin.amount
+
+
+        if score > 40 and parity_amount > 0:
 
             self.buy(price, time)
 
             return None
 
-        elif 40 >= score > 0 and score_diff[i] > 30 and self.usdt > 0:
+        elif 40 >= score > 0 and score_diff[i] > 30 and parity_amount > 0:
 
             self.buy(price, time)
 
             return None
 
-        elif score_diff[i] < -15 and self.coin_balance > 0:
+        elif score_diff[i] < -15 and coin_amount > 0:
 
             self.sell(price, time)
 
             return None
 
-        if self.last_action == "buy":
+        if self.coin.amount > 0:
 
             # If profit arrive -0.5%
             # Coin will sell immediately
 
-            bc = self.spot["trade_history"][-1]["buyP"]
+            bc = self.trade_history[-1].buy_price
 
             if (price - bc) / bc <= -loss_sens:
                 self.sell(price, time)

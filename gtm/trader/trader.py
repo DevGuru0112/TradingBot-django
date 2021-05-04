@@ -31,39 +31,43 @@ class Trader:
     def __init__(
         self, binance_manager: Binance_API_Manager, db_manager: DatabaseManager
     ):
+        c = Coin.get("DOGE")
+
+        if c == None:
+            c = Coin(None, "DOGE", 0)
+            c.insert()
+
+        self.coin = c
         self.manager = binance_manager
-        self.coin = Coin(None,"DOGE", 1000)
         self.db_manager = db_manager
 
     def startTrade(self):
 
-        coin = Coin(None, "BTC", 20)
-
-        v1strategies = V1Strategies(self.manager, coin.gen_parity("USDT"))
+        v1strategies = V1Strategies(self.manager, self.coin.gen_parity("USDT"))
 
         warnings.simplefilter(action="ignore", category=SettingWithCopyWarning)
 
-        coin.insert()
-
-
-
         try:
 
-            # trader = TestTrader(spot, self.coin)
+            spot = self.coin.get_spot()
+
+            trade_history = Trade.get_all_history()
+
+            trader = TestTrader(self.coin, spot, trade_history, "USDT")
 
             while True:
 
-                # ch3_df = v1strategies.ch3mGetSignal()
+                ch3_df = v1strategies.ch3mGetSignal()
 
-                # if ch3_df.empty is True:
+                if ch3_df.empty is True:
 
-                #     time.sleep(1)
+                    time.sleep(1)
 
-                #     continue
+                    continue
 
-                # trader.trade(ch3_df)
+                trader.trade(ch3_df)
 
-                # trader.calculate_profit()
+                trader.calculate_profit()
 
                 writeFile("\n= = = = = = = = = = = = = = = = = = = =\n", "output")
 
