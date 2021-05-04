@@ -1,5 +1,4 @@
 from ..data.logger import Logger
-from ..data.database.model.Trade import Trade
 from types import SimpleNamespace
 
 import traceback
@@ -49,4 +48,3 @@ def writeFile(text, filename):
     f.write(text)
 
     f.close()
-
