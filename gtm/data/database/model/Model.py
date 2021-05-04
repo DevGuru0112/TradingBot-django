@@ -12,6 +12,7 @@ class Model:
         self.spot_wallet = self.db["spot_wallet"]
         self.trade_history = self.db["trade_history"]
 
+
     def insert(self):
         pass
 
@@ -44,6 +45,7 @@ class Model:
         @return
             - update_result : pymongo.results.UpdateResult
         """
+
         column_name = self.__class__.column_name
 
         col = self.__getattribute__(column_name)
@@ -53,7 +55,6 @@ class Model:
         updated = {"$set": self.to_json()}
 
         update_result = col.update_one(query, updated)
-
         return update_result
 
     @classmethod

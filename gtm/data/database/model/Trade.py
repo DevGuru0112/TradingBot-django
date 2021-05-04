@@ -14,11 +14,11 @@ class Trade(Model):
         sell_parity,
         amount,
         buy_price,
-        buy_time,
-        sell_time,
-        sell_price,
-        result,
-        profit,
+        buy_time=None,
+        sell_time=None,
+        sell_price=None,
+        result=None,
+        profit=None,
     ):
 
         super().__init__()
@@ -32,9 +32,10 @@ class Trade(Model):
             if buy_time != None
             else datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         )
-        self.sell_time = None
-        self.sell_price = None
-        self.result = None
+        self.sell_time = sell_time
+        self.sell_price = sell_price
+        self.result = result
+        self.profit = profit
 
     def sell(self, sell_price, result):
 
@@ -53,26 +54,16 @@ class Trade(Model):
         self.sell_price = sell_price
         self.result = result
         self.sell_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        self.profit = self.calculate_profit(self.buyP, sellP) if sellP != None else None
+        self.profit = (
+            self.calculate_profit(self.buy_price, sell_price)
+            if sell_price != None
+            else None
+        )
 
         return self
 
     def calculate_profit(self, buy, sell):
         return ((sell - buy) / buy) * 100
-
-    def toJson(self):
-
-        return {
-            "buy_parity": self.buy_parity,
-            "sell_parity": self.sell_parity,
-            "buy_price": self.buy_price,
-            "buy_time": self.buy_time,
-            "amount": self.amount,
-            "sell_price": self.sell_price,
-            "sell_time": self.sell_time,
-            "result": self.result,
-            "profit": self.profit,
-        }
 
     def insert(self):
 
@@ -87,7 +78,7 @@ class Trade(Model):
 
         dict_form = self.to_json()
 
-        self.trade_history.insert_one(dict_form)
+        self.id = self.trade_history.insert_one(dict_form).inserted_id
 
         return self
 
@@ -125,4 +116,15 @@ class Trade(Model):
         return Trade.from_json(coin)
 
     def to_json(self):
-        return {}
+
+        return {
+            "buy_parity": self.buy_parity,
+            "sell_parity": self.sell_parity,
+            "buy_price": self.buy_price,
+            "buy_time": self.buy_time,
+            "amount": self.amount,
+            "sell_price": self.sell_price,
+            "sell_time": self.sell_time,
+            "result": self.result,
+            "profit": self.profit,
+        }
