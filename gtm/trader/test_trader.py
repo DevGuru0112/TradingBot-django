@@ -1,8 +1,10 @@
 from datetime import datetime
-from ..strategies.helper import *
+from ..strategies.helper import writeFile
 from ..data.logger import Logger
 from ..data.notifications import NotificationHandler
 from ..data.database.model.Trade import Trade
+from ..strategies.strategy_helper import get_candle_property
+
 
 logger = Logger("test_trader")
 nh = NotificationHandler()
@@ -123,7 +125,7 @@ class TestTrader:
 
         nh.send_notification(info)
 
-    def trade(self, df):
+    def trade(self, df, signal):
 
         """
         This function check instant score of coin at current condition.
@@ -137,57 +139,27 @@ class TestTrader:
             - None
         """
 
-        i = len(df.index) - 1
+        candle_property = get_candle_property(df)
 
-        score = df["score"][i]
-        price = df["close"][i]
-        time = df.index[i].strftime("%Y-%m-%d %H:%M:%S")
-
-        self.last_price = price
-
-        score_diff = df["score"].diff().fillna(0)
-
-        info = "\n= = = = = = = = = = = = = = = = = = =\n" "Macd : {0},Rsi : {1},Cci : {2}, Sma : {3}\nScore : {4} -  Score Diff : {5}\n".format(
-            df["macd_score"][i],
-            df["rsi_score"][i],
-            df["cci_score"][i],
-            df["sma_score"][i],
-            score,
-            score_diff[i],
-        )
-
-        writeFile(info, "output")
-
-        nh.send_notification(info)
-
-        parity_amount = self.parity.amount
         coin_amount = self.coin.amount
 
+        parity_amount = self.parity.amount
 
-        if score > 40 and parity_amount > 0:
+        time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        price = df["close"].iloc[-1]
+
+        if signal == "BUY" and parity_amount > 0:
 
             self.buy(price, time)
 
-            return None
-
-        elif 40 >= score > 0 and score_diff[i] > 30 and parity_amount > 0:
-
-            self.buy(price, time)
-
-            return None
-
-        elif score_diff[i] < -15 and coin_amount > 0:
+        if signal == "SELL" and coin_amount > 0:
 
             self.sell(price, time)
 
-            return None
+        bp = self.trade_history[-1].buy_price
+        profit = (price - bp) * 100 / bp
 
-        if self.coin.amount > 0:
+        if profit < candle_property["nm"] * 3 and coin_amount > 0:
 
-            # If profit arrive -0.5%
-            # Coin will sell immediately
-
-            bc = self.trade_history[-1].buy_price
-
-            if (price - bc) / bc <= -loss_sens:
-                self.sell(price, time)
+            self.sell(price, time)
