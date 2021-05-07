@@ -1,6 +1,9 @@
 from datetime import datetime
 from .Model import Model
+from .Coin import Coin
 import json
+
+fee = 99925 / 100000  # 0.075 fee
 
 
 class Trade(Model):
@@ -10,8 +13,8 @@ class Trade(Model):
     def __init__(
         self,
         _id,
-        buy_parity,
-        sell_parity,
+        bridge: Coin,
+        coin: Coin,
         amount,
         buy_price,
         buy_time=None,
@@ -23,10 +26,11 @@ class Trade(Model):
 
         super().__init__()
         self.id = _id if _id != None else None
-        self.buy_parity = buy_parity
-        self.sell_parity = sell_parity
+        self.coin = coin.name
+        self.bridge = bridge.name
         self.amount = amount
         self.buy_price = buy_price
+
         self.buy_time = (
             buy_time
             if buy_time != None
@@ -37,7 +41,7 @@ class Trade(Model):
         self.result = result
         self.profit = profit
 
-    def sell(self, sell_price, result):
+    def sell(self, sell_price):
 
         """
         This function adds sell point attributes to the
@@ -52,8 +56,11 @@ class Trade(Model):
         """
 
         self.sell_price = sell_price
-        self.result = result
+
+        self.result = self.amount * sell_price
+
         self.sell_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
         self.profit = (
             self.calculate_profit(self.buy_price, sell_price)
             if sell_price != None
@@ -75,6 +82,7 @@ class Trade(Model):
         @return
             - Trade : self
         """
+        
 
         dict_form = self.to_json()
 
@@ -118,8 +126,8 @@ class Trade(Model):
     def to_json(self):
 
         return {
-            "buy_parity": self.buy_parity,
-            "sell_parity": self.sell_parity,
+            "coin": self.coin,
+            "bridge": self.bridge,
             "buy_price": self.buy_price,
             "buy_time": self.buy_time,
             "amount": self.amount,

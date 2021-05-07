@@ -67,7 +67,7 @@ class Model:
         @return
             - update_result : pymongo.results.UpdateResult
         """
-
+        
         column_name = cls.column_name
 
         col = Model().__getattribute__(column_name)
