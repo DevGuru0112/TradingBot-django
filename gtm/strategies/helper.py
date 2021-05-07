@@ -1,6 +1,7 @@
 from ..data.logger import Logger
 from types import SimpleNamespace
 
+import pandas as pd
 import traceback
 import json
 import os
@@ -48,3 +49,15 @@ def writeFile(text, filename):
     f.write(text)
 
     f.close()
+
+
+def writeExcel(df : pd.DataFrame):    
+    # create excel writer
+
+
+    writer = pd.ExcelWriter('output/output.xlsx')
+    # write dataframe to excel sheet named 'marks'
+    df.to_excel(writer, 'trade')
+    # save the excel file
+    writer.save()
+    print('DataFrame is written successfully to Excel Sheet.')
