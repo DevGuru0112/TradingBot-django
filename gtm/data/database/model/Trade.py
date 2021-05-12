@@ -1,9 +1,10 @@
 from datetime import datetime
 from .Model import Model
 from .Coin import Coin
-import json
 
-fee = 99925 / 100000  # 0.075 fee
+pos_fee = 0.99925  # 0.075 fee
+
+pob_fee = 1.00075
 
 
 class Trade(Model):
@@ -13,8 +14,8 @@ class Trade(Model):
     def __init__(
         self,
         _id,
-        bridge: Coin,
-        coin: Coin,
+        bridge,
+        coin,
         amount,
         buy_price,
         buy_time=None,
@@ -26,8 +27,8 @@ class Trade(Model):
 
         super().__init__()
         self.id = _id if _id != None else None
-        self.coin = coin.name
-        self.bridge = bridge.name
+        self.coin = coin
+        self.bridge = bridge
         self.amount = amount
         self.buy_price = buy_price
 
@@ -36,6 +37,7 @@ class Trade(Model):
             if buy_time != None
             else datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         )
+
         self.sell_time = sell_time
         self.sell_price = sell_price
         self.result = result
@@ -57,7 +59,7 @@ class Trade(Model):
 
         self.sell_price = sell_price
 
-        self.result = self.amount * sell_price
+        self.result = self.amount * sell_price * pos_fee
 
         self.sell_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
@@ -70,7 +72,7 @@ class Trade(Model):
         return self
 
     def calculate_profit(self, buy, sell):
-        return ((sell - buy) / buy) * 100
+        return ((sell * pos_fee - buy * pob_fee) / buy) * 100
 
     def insert(self):
 
@@ -82,7 +84,6 @@ class Trade(Model):
         @return
             - Trade : self
         """
-        
 
         dict_form = self.to_json()
 
@@ -106,7 +107,7 @@ class Trade(Model):
 
         th_list = Trade.from_jsons(cursor)
 
-        return th_list
+        return {str(th.id): th for th in th_list}
 
     @staticmethod
     def get():

@@ -1,13 +1,13 @@
-from ..database_manager import DatabaseManager
-import json
-from ....trader import trader
+from ...data import Data
+
 from bson import json_util, ObjectId
+import json
 
 
 class Model:
     def __init__(self):
         self.id = None
-        self.client = trader.db_manager.client
+        self.client = Data.db.client
         self.db = self.client["binance_gtm"]
         self.spot_wallet = self.db["spot_wallet"]
         self.trade_history = self.db["trade_history"]
@@ -27,7 +27,7 @@ class Model:
         @return
             - query_result : Query
         """
-        db = trader.db_manager.client["binance_gtm"]
+        db = Data.db.client["binance_gtm"]
 
         query_result = db[col].find_one(query)
 
@@ -54,8 +54,10 @@ class Model:
 
         updated = {"$set": self.to_json()}
 
-        update_result = col.update_one(query, updated)
-        return update_result
+        try:
+            return col.update_one(query, updated)
+        except:
+            return None
 
     @classmethod
     def get_all(cls):
@@ -67,7 +69,7 @@ class Model:
         @return
             - update_result : pymongo.results.UpdateResult
         """
-        
+
         column_name = cls.column_name
 
         col = Model().__getattribute__(column_name)

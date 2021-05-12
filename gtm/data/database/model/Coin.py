@@ -1,16 +1,16 @@
 from .Model import Model
-import json
 
 
 class Coin(Model):
 
     column_name = "spot_wallet"
 
-    def __init__(self, _id, name, amount):
+    def __init__(self, _id, name, amount, open_trades):
         super().__init__()
+        self.id = _id if _id != None else None
         self.name = name
         self.amount = amount
-        self.id = _id if _id != None else None
+        self.open_trades = open_trades
 
     @staticmethod
     def get(coin_name):
@@ -45,7 +45,10 @@ class Coin(Model):
         coin = Coin.get(self.name)
 
         if coin == None:
-            self.spot_wallet.insert_one({"name": self.name, "amount": self.amount})
+
+            _id = self.spot_wallet.insert_one(self.to_json())
+            self.id = str(_id.inserted_id)
+
         else:
             self.id = coin.id
             coin.amount += self.amount
@@ -53,10 +56,11 @@ class Coin(Model):
 
         return self
 
-    def get_spot(self):
+    @staticmethod
+    def get_spot():
 
         """
-        This function gets all coins from database. Then , creates instances of these coins and returns
+        This function gets all coins from database. Then , creates instances of these coins and returns.
         @params
             - None
 
@@ -64,7 +68,7 @@ class Coin(Model):
             - list : (an array which is inside Coins)
         """
 
-        cursor = self.get_all()
+        cursor = Coin.get_all()
 
         spot_list = Coin.from_jsons(cursor)
 
@@ -73,9 +77,13 @@ class Coin(Model):
         return spot_dict
 
     def to_json(self):
-        return {"name": self.name, "amount": self.amount}
+        return {
+            "name": self.name,
+            "amount": self.amount,
+            "open_trades": self.open_trades,
+        }
 
-    def gen_parity(self, parity):
+    def generate_pair(self, parity):
         """
         This function generate coin/parity conjugate. Example : BTC -> USDT :  BTCUSDT
         @params
