@@ -1,13 +1,11 @@
 from datetime import datetime
 from ..strategies.helper import writeFile
 from ..data.logger import Logger
-from ..data.notifications import NotificationHandler
 from ..data.database.model.Trade import Trade
 from ..strategies.strategy_helper import get_candle_property
-
+from ..data.data import Data
 
 logger = Logger("test_trader")
-nh = NotificationHandler()
 
 
 fee = 99925 / 100000  # 0.075 fee
@@ -123,7 +121,7 @@ class TestTrader:
 
         writeFile(info, "output")
 
-        nh.send_notification(info)
+        Data.nh.send_notification(info)
 
     def trade(self, df, signal):
 

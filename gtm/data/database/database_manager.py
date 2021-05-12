@@ -3,25 +3,28 @@ from pymongo.errors import *
 from ..config import Config
 from pprint import pprint
 from ..logger import Logger
+from ..data import Data
 import traceback
 
 
-logger = Logger("database")
+
 
 class DatabaseManager:
-
     def __init__(self):
         
+        logger  = Data.logger["database"]
+        
         while True:
-            
-            try : 
-                self.client = MongoClient(Config.MONGO_URI)
+
+            try:
+                self.client = MongoClient(Config.DATABASE["URI"])
                 self.db = self.client["binance_gtm"]
 
             except Exception as e:
-                traceback.print_exception(type(e), e, e.__traceback__)
+                # traceback.print_exception(type(e), e, e.__traceback__)
                 logger.error(e)
                 continue
-            
+
             break
 
+        pass

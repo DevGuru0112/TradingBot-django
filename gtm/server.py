@@ -1,24 +1,31 @@
 from .data.config import Config
-from binance.client import Client
 from .api.binance_api_manager import Binance_API_Manager
 from .data.database.database_manager import DatabaseManager
-from .scheduler import SafeScheduler
-from .trader.trader import Trader
+from .trader.auto_trader import AutoTrader
 from .data.logger import Logger
-import time
+from .data.data import Data
+from .data.notifications import NotificationHandler
 
 
 class Server:
+    def __init__(self):
+        pass
+
     def start(self):
+        Config.read_config()
 
-        manager = Binance_API_Manager()
+        Data.logger["server"] = Logger("server")
+        Data.logger["database"] = Logger("database")
 
-        db_manager = DatabaseManager()
+        Data.nh = NotificationHandler()
 
-        logger = Logger("server")
+        Data.bm = Binance_API_Manager()
+        Data.db = DatabaseManager()
 
-        trader = Trader(manager, db_manager, logger)
+        trader = AutoTrader()
 
+        
+        
         print("Server Started\n")
 
-        trader.startTrade()
+        trader.start()
