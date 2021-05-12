@@ -1,9 +1,25 @@
+import yaml
+
+path = "config/gtm.yml"
+
+
 class Config:
 
-    API_KEY = "hQ8ngjpc2Fu5wEp1lmpupf8t5kldhC4jzbY90NwNklj3QRkkXPQmVVHivD0JegWw"
+    API = {}
 
-    API_SECRET_KEY = "4KNuGFz7PGbGeZ7QorTKqRHAl8hNPFINuaE9xjl6a2FWZqpap7BHsL6rsxYaYVJ3"
+    DATABASE = {}
 
-    PORT = 5500
+    PAIRS = []
 
-    MONGO_URI = "mongodb+srv://abdullahbodur:bodur123@unityeducation.opepq.mongodb.net/binance_gtm?retryWrites=true&w=majority"
+    BRIDGE = None
+
+    @staticmethod
+    def read_config():
+
+        with open(path) as yml:
+            config = yaml.safe_load(yml)
+
+        Config.API = config["API"]
+        Config.DATABASE = config["DATABASE"]
+        Config.PAIRS = config["PAIRS"].split()
+        Config.BRIDGE = config["BRIDGE"]
