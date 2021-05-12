@@ -1,7 +1,5 @@
 import pandas as pd
 import numpy as np
-from datetime import datetime
-import matplotlib.pyplot as plt
 from .analyzerUtils import AnalyzerUtils
 
 
@@ -22,10 +20,13 @@ MIN_PERIOD = 0
 
 
 class Indicators(AnalyzerUtils):
-    def __init__(self, symbol: str, data: list):
-        self.symbol = symbol
-        self.data = data
-        self.df = self.convert_to_dataframe(data)
+    def __init__(self, data):
+
+        if type(data) != pd.DataFrame:
+            self.data = data
+            self.df = self.convert_to_dataframe(data)
+        else:
+            self.df = data
 
     def calculate(
         self,
