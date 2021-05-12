@@ -1,39 +1,23 @@
-from ..api.binance_api_manager import Binance_API_Manager
-from ..strategies.v1_strategies import V1Strategies
 from ..strategies.v2_strategies import V2Strategies
 
 from .test_trader import TestTrader
 from ..strategies.helper import writeFile
-from ..data.logger import Logger
-from ..data.notifications import NotificationHandler
 from ..data.database.model.Coin import Coin
-from ..data.database.database_manager import DatabaseManager
-from ..scheduler import SafeScheduler
-
 from ..data.database.model.Coin import Coin
-from ..data.database.model.Model import Model
 from ..data.database.model.Trade import Trade
-
-
 from pandas.core.common import SettingWithCopyWarning
+
+from ..data.data import Data
+from ..api.api import Api
+from ..data.config import Config
+
 import time
 import warnings
 import traceback
 
-import pandas as pd
-
-nh = NotificationHandler()
-
-db_manager = DatabaseManager()
-
 
 class Trader:
-    def __init__(
-        self,
-        binance_manager: Binance_API_Manager,
-        db_manager: DatabaseManager,
-        logger: Logger,
-    ):
+    def __init__(self):
         c = Coin.get("ADA")
 
         if c == None:
@@ -41,13 +25,17 @@ class Trader:
             c.insert()
 
         self.coin = c
-        self.manager = binance_manager
-        self.db_manager = db_manager
-        self.logger = logger
+        self.manager = Data.bm
+        self.db_manager = Data.db
+        self.logger = Data.logger["server"]
+
+        self.api = Api(Data.bm.client, self.logger)
 
     def startTrade(self):
 
-        v2strategies = V2Strategies(self.manager, self.coin.gen_parity("USDT"))
+        v2strategies = V2Strategies(
+            self.manager, self.coin.generate_pair(Config.BRIDGE)
+        )
 
         warnings.simplefilter(action="ignore", category=SettingWithCopyWarning)
 
@@ -57,15 +45,17 @@ class Trader:
 
             trade_history = Trade.get_all_history()
 
-            trader = TestTrader(self.coin, spot, trade_history, "USDT")
-
-            #scheduler = SafeScheduler(self.logger)
-
-            #scheduler.every(10).second.do(v2strategies.ch3mGetSignal)
+            trader = TestTrader(self.coin, spot, trade_history, Config.BRIDGE)
 
             while True:
 
-                v2strategies.ch3mGetSignal()
+                df = self.api.get_candles(
+                    self.coin.generate_pair(Config.BRIDGE),
+                    self.manager.client.KLINE_INTERVAL_3MINUTE,
+                    20,
+                )
+
+                v2strategies.ch3mGetSignal(df)
 
                 if v2strategies.df.empty is True:
 
