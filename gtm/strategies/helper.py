@@ -1,9 +1,6 @@
 from ..data.logger import Logger
-from types import SimpleNamespace
 
 import pandas as pd
-import traceback
-import json
 import os
 
 
@@ -17,7 +14,6 @@ def strArrToIntArr_2d(s_arr: list):
     # This function convert 2d str array to 2d int array
 
     ml = []
-
     for sl in s_arr:
         l = []
 

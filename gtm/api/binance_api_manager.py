@@ -13,7 +13,7 @@ class Binance_API_Manager:
         while True:
 
             try:
-                self.client = Client(Config.API_KEY, Config.API_SECRET_KEY)
+                self.client = Client(Config.API["API_KEY"], Config.API["API_SECRET_KEY"])
             except Exception as e:
                 traceback.print_exception(type(e), e, e.__traceback__)
                 logger.error(e)

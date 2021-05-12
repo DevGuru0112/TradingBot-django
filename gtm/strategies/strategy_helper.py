@@ -21,7 +21,6 @@ def get_candle_property(df: pd.DataFrame):
     # TODO #1 So, we can easily calculate how much profit if you enter on this increase moment
     
 
-    
     delta = df["change"]
     close = df["close"]
 

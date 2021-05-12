@@ -1,13 +1,11 @@
-from .notifications import NotificationHandler
-
 import logging.handlers
-import traceback
+
+from .data import Data
 
 
 class Logger:
 
     # Logger = None
-    # NotificationHandler = None
 
     def __init__(self, service_name="trader", enable_notifications=True):
 
@@ -27,7 +25,7 @@ class Logger:
         self.Logger.addHandler(fh)
 
         # notification handler
-        self.nh = NotificationHandler(enable_notifications)
+        self.nh = Data.nh
 
     def log(self, message, level="info", notification=True):
 

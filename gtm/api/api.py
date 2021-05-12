@@ -3,9 +3,9 @@ from binance.exceptions import BinanceAPIException
 from ..data.database.model.Coin import Coin
 from ..data.database.model.Trade import Trade
 from ..data.logger import Logger
+from ..data.config import Config
 
-from datetime import datetime
-from binance import client
+from ..data.data import Data
 
 import time
 
@@ -15,12 +15,24 @@ class Api:
     FEE = 99925 / 100000
 
     def __init__(
-        self, client: Binance_API_Manager, logger: Logger, spot: dict, th: dict
+        self,
+        client: Binance_API_Manager,
+        logger: Logger,
     ):
         self.client = client.client
-        self.spot = spot
-        self.th = th
+        # self.spot = spot
+        # self.th = th
         self.logger = logger
+
+    def get_candles(
+        self,
+        symbol: str,
+        interval: str,
+        limit=100,
+    ):
+        return self._try(
+            self.client.get_klines, symbol=symbol, limit=limit, interval=interval
+        )
 
     def _get_price(self, symbol: str, isBuy: bool):
 
@@ -65,7 +77,7 @@ class Api:
                 self.logger.error(f"Unexpected error : {e}")
                 time.sleep(1)
 
-    def _try(self, func, *args, **kwargs):
+    def _try(self, func, max_attempts=10, *args, **kwargs):
 
         """
         It retries any function until arrive attempts count
@@ -80,7 +92,7 @@ class Api:
 
         attempts = 0
 
-        max_attempts = kwargs["max_attemps"] or 10
+        max_attempts = max_attempts or 10
 
         while attempts < max_attempts:
             try:
@@ -142,9 +154,9 @@ class Api:
             - None
         """
 
-        parity = self.spot["usdt"]
+        parity = Data.spot[Config.BRIDGE]
 
-        symbol = coin.gen_parity(parity.name)
+        symbol = coin.generate_pair(parity.name)
 
         order = self._quick_limit_order(self.client.order_market_buy, symbol, parity)
 
@@ -182,11 +194,11 @@ class Api:
             - None
         """
 
-        trade = self.th[trade_id]
+        trade = Data.th[trade_id]
 
-        parity = self.spot["usdt"]
+        parity = Data.spot[Config.BRIDGE]
 
-        symbol = coin.gen_parity(parity.name)
+        symbol = coin.generate_pair(parity.name)
 
         order = self._quick_limit_order(self.client.order_market_sell, symbol, coin)
 
@@ -229,6 +241,6 @@ class Api:
         trade.save()
         parity.save()
 
-        self.th[trade.id] = trade
-        self.spot[coin.name] = coin
-        self.spot["usdt"] = parity
+        Data.th[trade.id] = trade
+        Data.spot[coin.name] = coin
+        Data.spot[Config.BRIDGE] = parity
