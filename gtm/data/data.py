@@ -24,3 +24,6 @@ class Data:
 
     # notification Handler
     nh = None
+
+    # TOTAL VALUE OF SPOT
+    sow = 0

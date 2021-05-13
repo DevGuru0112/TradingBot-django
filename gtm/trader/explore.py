@@ -27,7 +27,7 @@ class Explore:
     async def _candle_stick_data(self, fp: str, op: str, queue):
 
         url = "wss://stream.binance.com:9443/ws/"  # steam address
-
+          
         async with websockets.connect(url + fp) as sock:
 
             await sock.send(op)
@@ -48,6 +48,18 @@ class Explore:
                 queue.put_nowait("True")
 
     async def scan_market(self, interval: str, func):
+
+        """
+        @asyncrhon_func
+        This function brings together candles stream with candles analyzer&trader.
+
+        @params
+            - interval : str
+            - func (trader_func)
+
+        @return
+            - None
+        """
 
         km = f"@kline_{interval}"
 

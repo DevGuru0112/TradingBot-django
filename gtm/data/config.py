@@ -13,6 +13,8 @@ class Config:
 
     BRIDGE = None
 
+    LOSS = 0
+
     @staticmethod
     def read_config():
 
@@ -23,3 +25,4 @@ class Config:
         Config.DATABASE = config["DATABASE"]
         Config.PAIRS = config["PAIRS"].split()
         Config.BRIDGE = config["BRIDGE"]
+        Config.LOSS = config["LOSS"]

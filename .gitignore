@@ -9,3 +9,6 @@ output.txt
 __pycache__/
 *.pyc
 
+*.yml
+
+*.ipynb

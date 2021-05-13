@@ -35,6 +35,8 @@ class AutoTrader:
 
     def trade(self, loop, queue):
 
+        Coin._wallet_sum(time.sleep, 1)
+
         while True:
 
             try:
@@ -48,6 +50,17 @@ class AutoTrader:
                 break
 
     def _init_spot(self):
+
+        """
+        This function initialize coins. If coins already inserted to database , it fetcged from them.
+        Otherwise,it creates new one and pushs them
+
+        @params
+            - None
+
+        @return
+            - None
+        """
 
         spot = Coin.get_spot()
 

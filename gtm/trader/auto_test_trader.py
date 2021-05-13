@@ -1,5 +1,4 @@
 from gtm.data.database.model.Coin import Coin
-from bson.objectid import ObjectId
 from ..data.data import Data
 from ..strategies.stream_strategy import StreamStrategy
 from ..strategies.strategy_helper import get_candle_property
@@ -60,11 +59,14 @@ class AutoTestTrader:
         Data.spot[coin.name] = coin
         Data.spot[Config.BRIDGE] = bridge
 
+        Coin.wallet_sum()
+
         info = (
             f"----------------------------------------------------\n"
             f"coin name : {coin.name} , type : BUY\n"
             f"coin amount : {a} , price : {price}, amount : {coin.amount}\n"
             f"Left bridge : {bridge.amount}\n"
+            f"BALANCE SUM : {Data.sow}"
         )
 
         writeFile(info, "output")
@@ -91,14 +93,24 @@ class AutoTestTrader:
 
         total = amount * price * FEE
 
+        profit = 0
+
         if coin.amount == amount:
 
             # close all position in this coin
             for _id in coin.open_trades:
 
-                Data.th[_id].sell(price)
+                th = Data.th[_id]
 
-                Data.th[_id].save()
+                th.sell(price)
+
+                profit += th.profit * th.amount
+
+                th.save()
+
+                Data.th[_id] = th
+
+            profit /= len(coin.open_trades)
 
             coin.open_trades.clear()
 
@@ -107,6 +119,8 @@ class AutoTestTrader:
             # close specify position in this coin
 
             Data.th[_id].sell(price)
+
+            profit = Data.th[_id].profit
 
             Data.th[_id].save()
 
@@ -120,14 +134,15 @@ class AutoTestTrader:
 
         Data.spot[Config.BRIDGE] = bridge
         Data.spot[coin.name] = coin
-        
-        Data.th[_id]
+
+        Coin.wallet_sum()
+
         info = (
             f"----------------------------------------------------\n"
             f"coin name : {coin.name} , type : SELL \n"
             f"total : {total} , price : {price}\n"
             f"amount : {amount}, left coin : {coin.amount}\n"
-            f"profit : {}"
+            f"profit : {profit}, BALANCE SUM : {Data.sow}"
         )
 
         writeFile(info, "output")
@@ -181,15 +196,13 @@ class AutoTestTrader:
             # dataframe of selected pair
             df = poc[pair]
 
-            candle_property = get_candle_property(df)
+            # candle_property = get_candle_property(df)
 
             price = df["close"].iloc[-1]
 
             coin_name = pair[: len(pair) - 4]
 
             coin = spot[coin_name]
-
-            coin_amount = coin.amount
 
             for _id in coin.open_trades:
 
@@ -199,11 +212,11 @@ class AutoTestTrader:
 
                 profit = (price - bp) * 100 / bp
 
-                if profit < -2:
+                if profit <= Config.LOSS:
 
                     amount = open_trade.amount
-                    # sell time because loss is higher than expcected
 
+                    # sell time because loss is higher than expcected
                     total = amount * price
 
                     if total >= 10:
@@ -214,20 +227,22 @@ class AutoTestTrader:
 
             if signal == "BUY" and bridge_amount > 0:
 
-                amount = bridge_amount / 4
+                amount = Trade.available_bridge(coin)
 
                 if amount >= 10:
+
                     try:
                         self._buy(coin, price, amount)
                     except:
                         traceback.print_exc()
 
-            if signal == "SELL" and coin_amount > 0:
+            if signal == "SELL" and coin.amount > 0:
 
-                total = coin_amount * price
+                total = coin.amount * price
+                
                 if total > 10:
 
                     try:
-                        self._sell(coin, price, coin_amount)
+                        self._sell(coin, price, coin.amount)
                     except:
                         traceback.print_exc()

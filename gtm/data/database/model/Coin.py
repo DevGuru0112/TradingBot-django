@@ -1,4 +1,6 @@
 from .Model import Model
+from ...data import Data
+from ...config import Config
 
 
 class Coin(Model):
@@ -93,3 +95,28 @@ class Coin(Model):
             - parity conjugate : str
         """
         return self.name + parity
+
+    @staticmethod
+    def wallet_sum(func=None, **args):
+
+        func(args)
+
+        sow = 0
+
+        for coin in Data.spot:
+
+            pair = coin.name + Config.BRIDGE
+
+            df = Data.poc.get(pair)
+
+            if coin.name == Config.BRIDGE:
+
+                sow += coin.amount
+
+            elif df != None:
+
+                price = df["close"][-1]
+
+                sow += coin.amount * price
+
+        Data.sow = sow

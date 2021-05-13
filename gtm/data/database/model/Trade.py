@@ -1,6 +1,9 @@
 from datetime import datetime
+from os import sep
 from .Model import Model
 from .Coin import Coin
+from ...data import Data
+from ...config import Config
 
 pos_fee = 0.99925  # 0.075 fee
 
@@ -137,3 +140,21 @@ class Trade(Model):
             "result": self.result,
             "profit": self.profit,
         }
+
+    @staticmethod
+    def available_bridge(coin: Coin):
+
+        # calculate all wallet value
+        total = Coin.wallet_sum()
+
+        # divide this value by 4
+        separated = total / 4
+
+        coin_name = coin.name + Config.BRIDGE
+
+        price = Data.poc[coin_name]["close"][-1]
+
+        # discard already given
+        separated -= price * coin.amount
+
+        return (separated / 2) if separated > 20 else separated
