@@ -97,23 +97,27 @@ class Coin(Model):
         return self.name + parity
 
     @staticmethod
-    def wallet_sum(func=None, **args):
+    def wallet_sum(func=None, *args):
 
-        func(args)
+        func(*args)
 
         sow = 0
 
-        for coin in Data.spot:
+        for cn in Data.spot:
+            
+            coin = Data.spot[cn]
+            
+            if cn != Config.BRIDGE:
 
-            pair = coin.name + Config.BRIDGE
+                pair = cn + Config.BRIDGE
 
-            df = Data.poc.get(pair)
+                df = Data.poc[pair]
 
-            if coin.name == Config.BRIDGE:
+            if cn == Config.BRIDGE:
 
                 sow += coin.amount
 
-            elif df != None:
+            elif df.empty is not True:
 
                 price = df["close"][-1]
 

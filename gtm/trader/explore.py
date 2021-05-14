@@ -78,10 +78,13 @@ class Explore:
         queue = aio.Queue()
 
         loop = aio.get_event_loop()
-
+        
+        
         trade_block = loop.run_in_executor(None, func, loop, queue)
 
         scan_block = loop.create_task(self._candle_stick_data(fp, op, queue))
+        
+
 
         while True:
 
@@ -90,10 +93,13 @@ class Explore:
                 message = await queue.get()
 
             except:
+                
+                for task in aio.Task.all_tasks(loop):
+                    task.cancel()
                 break
+        
 
         loop.stop()
-
     def _get_multiple_candles(self, pairs: list, interval: str):
 
         candles = {}
