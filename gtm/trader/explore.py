@@ -1,4 +1,7 @@
+from traceback import print_exc
+from typing import cast
 from binance.client import Client
+from schedule import ScheduleError, every
 from ..data.logger import Logger
 from ..data.config import Config
 from ..api.api import Api
@@ -7,6 +10,7 @@ from datetime import datetime
 from ..strategies.stream_strategy import StreamStrategy
 from ..data.data import Data
 
+from ..scheduler import SafeScheduler
 
 import json
 import websockets
@@ -24,28 +28,39 @@ class Explore:
         self.api = api
         self.strategy = StreamStrategy(limit=20)
 
-    async def _candle_stick_data(self, fp: str, op: str, queue):
+    async def _candle_stick_data(self, fp: str, op: str):
 
         url = "wss://stream.binance.com:9443/ws/"  # steam address
-          
+
         async with websockets.connect(url + fp) as sock:
 
             await sock.send(op)
 
             while True:
 
-                resp = await sock.recv()
+                try:
+                    resp = await sock.recv()
 
-                if "result" in resp:
-                    continue
+                    if "result" in resp:
+                        continue
 
-                pair = json.loads(resp)
+                    pair = json.loads(resp)
 
-                kline = pair["k"]
+                    kline = pair["k"]
 
-                self._update_dataframe(kline)
+                    self._update_dataframe(kline)
 
-                queue.put_nowait("True")
+                except BaseException as e:
+
+                    raise BaseException
+
+                except Exception as e:
+
+                    self.logger.error(e)
+                    
+                    break
+
+            await sock.close()
 
     async def scan_market(self, interval: str, func):
 
@@ -75,31 +90,28 @@ class Explore:
 
         self._get_multiple_candles(Config.PAIRS, interval)
 
-        queue = aio.Queue()
-
         loop = aio.get_event_loop()
+
+        tasks = [
+            aio.create_task(func()),
+            aio.create_task(self._candle_stick_data(fp, op)),
+        ]
         
+        try:
+            await aio.gather(*tasks)
+
+        except BaseException:
+           
+            self.logger.info("Scanner stopped")
+            
+            for task in tasks:
+                task.cancel()
         
-        trade_block = loop.run_in_executor(None, func, loop, queue)
-
-        scan_block = loop.create_task(self._candle_stick_data(fp, op, queue))
+        except Exception as e:
         
+           
+            self.logger.error(e)
 
-
-        while True:
-
-            try:
-
-                message = await queue.get()
-
-            except:
-                
-                for task in aio.Task.all_tasks(loop):
-                    task.cancel()
-                break
-        
-
-        loop.stop()
     def _get_multiple_candles(self, pairs: list, interval: str):
 
         candles = {}

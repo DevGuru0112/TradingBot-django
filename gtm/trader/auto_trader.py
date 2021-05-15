@@ -1,3 +1,4 @@
+from traceback import print_exc
 from ..api.api import Api
 from ..strategies.stream_strategy import StreamStrategy
 from .explore import Explore
@@ -7,6 +8,7 @@ from ..data.database.model.Trade import Trade
 from ..data.database.model.Coin import Coin
 from ..data.config import Config
 from ..data.data import Data
+from ..scheduler import SafeScheduler
 
 import time
 import warnings
@@ -31,23 +33,33 @@ class AutoTrader:
 
         explore = Explore(api, self.bm.client, self.logger)
 
-        aio.run(explore.scan_market(self.bm.client.KLINE_INTERVAL_3MINUTE, self.trade))
+        try:
+            aio.run(
+                explore.scan_market(self.bm.client.KLINE_INTERVAL_3MINUTE, self.trade)
+            )
+        except Exception as e:
 
-    def trade(self, loop, queue):
+            self.logger.error(e)
 
-        Coin._wallet_sum(time.sleep, 1)
+    @aio.coroutine
+    async def trade(self):
+
+        Coin.wallet_sum(time.sleep, 1)
 
         while True:
 
             try:
-                time.sleep(1)
+
+                await aio.sleep(1)
 
                 self.test_trader.trade()
 
-                loop.call_soon_threadsafe(queue.put_nowait, "True")
-
-            except:
+            except BaseException:
                 break
+                # raise BaseException
+
+            except Exception:
+                raise Exception
 
     def _init_spot(self):
 
