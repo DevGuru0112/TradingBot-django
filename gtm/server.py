@@ -14,18 +14,18 @@ class Server:
     def start(self):
         Config.read_config()
 
+        Data.nh = NotificationHandler()
         Data.logger["server"] = Logger("server")
         Data.logger["database"] = Logger("database")
-
-        Data.nh = NotificationHandler()
+        Data.logger["trade"] = Logger("trade")
 
         Data.bm = Binance_API_Manager()
         Data.db = DatabaseManager()
 
         trader = AutoTrader()
 
-        
-        
+
+
         print("Server Started\n")
 
         trader.start()

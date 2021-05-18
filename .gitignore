@@ -3,7 +3,7 @@
 
 output.txt
 
-*.log
+#*.log
 
 # Ignore Pycache files and dics
 __pycache__/

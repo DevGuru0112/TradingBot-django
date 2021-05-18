@@ -1,23 +1,22 @@
-from ..data.logger import Logger
-from .analyzers.analyzer import analyze3m
-
+from .analyzers.analyzer import analyze3m,analyze_depth
 from ..data.data import Data
 
 import pandas as pd
-
-logger = Logger("strategies")
 
 
 class StreamStrategy:
     def __init__(self, limit=100):
 
         self.limit = limit
+        self.logger = Data.logger["server"]
 
     def ch3mGetSignal(self, df: pd.DataFrame, symbol: str):
 
         signal = None
 
         df = analyze3m(df)
+
+        depth = analyze_depth(symbol)
 
         i = len(df.index) - 1
 
@@ -68,3 +67,5 @@ class StreamStrategy:
         Data.poc[symbol] = df
 
         Data.signals[symbol] = signal
+
+        return df, signal
