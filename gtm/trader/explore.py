@@ -1,32 +1,30 @@
-from traceback import print_exc
-from typing import cast
 from binance.client import Client
-from schedule import ScheduleError, every
 from ..data.logger import Logger
 from ..data.config import Config
 from ..api.api import Api
-from ..strategies.analyzers.analyzerUtils import AnalyzerUtils
-from datetime import datetime
-from ..strategies.stream_strategy import StreamStrategy
+from ..strategies.analyzers.analyzer_utils import convert_to_dataframe, _conv_df
 from ..data.data import Data
 
-from ..scheduler import SafeScheduler
+from collections import Counter
+from datetime import datetime
 
 import json
 import websockets
 import asyncio as aio
 import pandas as pd
+import traceback
+import numpy as np
 
 
 class Explore:
 
     # pairs_of_candles
 
-    def __init__(self, api: Api, client: Client, logger: Logger):
+    def __init__(self, api: Api, client: Client, logger: Logger, strategy):
         self.client = client
         self.logger = logger
         self.api = api
-        self.strategy = StreamStrategy(limit=20)
+        self.strategy = strategy
 
     async def _candle_stick_data(self, fp: str, op: str):
 
@@ -44,20 +42,27 @@ class Explore:
                     if "result" in resp:
                         continue
 
-                    pair = json.loads(resp)
+                    resp = json.loads(resp)
 
-                    kline = pair["k"]
+                    if resp.get("e") == "depthUpdate":
 
-                    self._update_dataframe(kline)
+                        self._update_depth(resp)
+
+                    elif resp.get("e") == "kline":
+
+                        kline = resp["k"]
+
+                        self._update_dataframe(kline)
 
                 except BaseException as e:
 
-                    raise BaseException
+                    raise BaseException(e)
 
                 except Exception as e:
 
-                    self.logger.error(e)
-                    
+                    exc = traceback.format_exc()
+                    self.logger.error(exc)
+
                     break
 
             await sock.close()
@@ -78,17 +83,23 @@ class Explore:
 
         km = f"@kline_{interval}"
 
+        dm = "@depth"
+
         pairs = [p.lower() + km for p in Config.PAIRS]
 
-        fp = pairs[0] + km
+        depths = [p.lower() + dm for p in Config.PAIRS]
 
-        op = pairs[1:]
+        fp = pairs[0]
 
-        d = {"method": "SUBSCRIBE", "params": pairs, "id": 1}
+        op = pairs[1:] + depths
+
+        d = {"method": "SUBSCRIBE", "params": op, "id": 1}
 
         op = json.dumps(d)
 
-        self._get_multiple_candles(Config.PAIRS, interval)
+        self._get_multiple_candles(interval)
+
+        self._get_pairs_orderbooks()
 
         loop = aio.get_event_loop()
 
@@ -96,25 +107,37 @@ class Explore:
             aio.create_task(func()),
             aio.create_task(self._candle_stick_data(fp, op)),
         ]
-        
+
         try:
             await aio.gather(*tasks)
 
-        except BaseException:
-           
-            self.logger.info("Scanner stopped")
-            
-            for task in tasks:
-                task.cancel()
-        
-        except Exception as e:
-        
-           
-            self.logger.error(e)
+        except BaseException as e:
 
-    def _get_multiple_candles(self, pairs: list, interval: str):
+            exc = traceback.format_exc()
+
+            self.logger.info(exc)
+
+        except Exception as e:
+
+            exc = traceback.format_exc()
+
+            self.logger.error(exc)
+
+            aio.sleep(1)
+
+        finally:
+
+            for task in tasks:
+
+                task.cancel()
+
+            loop.stop()
+
+    def _get_multiple_candles(self, interval: str):
 
         candles = {}
+
+        pairs = Config.PAIRS
 
         for pair in pairs:
 
@@ -124,9 +147,28 @@ class Explore:
                 # if tries get candle for 20 times but couldn't fetched
                 pass
 
-            candles[pair] = AnalyzerUtils.convert_to_dataframe(candle)
+            candles[pair] = convert_to_dataframe(candle)
 
         Data.poc = candles
+
+        print("Candles Loaded")
+
+    def _get_pairs_orderbooks(self):
+
+        pairs = Config.PAIRS
+
+        for pair in pairs:
+
+            ob = self.api._get_order_book(pair, limit=1000)
+
+            bids = _conv_df(ob["bids"])
+            asks = _conv_df(ob["asks"])
+
+            ob = {"bids": {"table": bids}, "asks": {"table": asks}}
+
+            Data.pod[pair] = ob
+
+        print("Order Books Loaded")
 
     def _update_dataframe(self, d: dict):
 
@@ -166,4 +208,38 @@ class Explore:
             lambda x: pd.to_datetime(datetime.fromtimestamp(x / 1000).strftime("%c"))
         )
 
-        self.strategy.ch3mGetSignal(df, symbol)
+        Data.poc[symbol] = df
+
+    def _update_depth(self, d: dict):
+
+        pair = d["s"]
+        # check if the latest depth Infos overdate from 10 second
+        pre_pod = Data.pod[pair]
+
+        bids1 = pre_pod["bids"]["table"]
+        asks1 = pre_pod["asks"]["table"]
+
+        bids2 = _conv_df(d["b"])
+        asks2 = _conv_df(d["a"])
+        
+        
+        if bids2.empty:
+            bids_new = bids1
+        else :     
+            bids_new = pd.concat([bids1,bids2]).drop_duplicates('price',keep='last').sort_values('price').reset_index()
+            bids_new.drop('index', axis=1, inplace=True)
+        
+        
+        if asks2.empty:
+            asks_new = asks1
+        else :     
+            asks_new = pd.concat([asks1,asks2]).drop_duplicates('price',keep='last').sort_values('price').reset_index()
+            asks_new.drop('index', axis=1, inplace=True)
+
+        bids_new = bids_new[bids_new.quantity != 0].head(500)
+        asks_new = asks_new[asks_new.quantity != 0].head(500)
+
+        
+        Data.podo[pair] = {"bids": bids2, "asks": asks2}
+
+        Data.pod[pair] = {"bids": {"table": bids_new}, "asks": {"table": asks_new}}

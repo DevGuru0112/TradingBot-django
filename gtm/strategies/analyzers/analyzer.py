@@ -1,4 +1,12 @@
 from .indicators import Indicators
+from ...data.data import Data
+from .analyzer_utils import calc_depth_movement
+
+def analyze_depth(pair):
+
+    depth = calc_depth_movement(pair)
+
+    return depth
 
 
 def analyze3m(df):
@@ -180,3 +188,6 @@ def analyze3m(df):
         df["score"][i] = score
 
     return df
+
+
+

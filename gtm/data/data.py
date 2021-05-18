@@ -2,6 +2,14 @@ class Data:
 
     # pairs of candles
     poc = {}
+    
+
+    # pairs of orderbook
+    pod = {}
+
+    # pairs of diff orderbook
+
+    podo = {}
 
     # signals
 
@@ -27,3 +35,7 @@ class Data:
 
     # TOTAL VALUE OF SPOT
     sow = 0
+
+
+    # CONSTANTS
+    WALL_SENSIVITY = 0.05

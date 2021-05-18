@@ -20,8 +20,6 @@ class Api:
         logger: Logger,
     ):
         self.client = client.client
-        # self.spot = spot
-        # self.th = th
         self.logger = logger
 
     def get_candles(
@@ -244,3 +242,7 @@ class Api:
         Data.th[trade.id] = trade
         Data.spot[coin.name] = coin
         Data.spot[Config.BRIDGE] = parity
+
+    def _get_order_book(self, symbol: str, limit=500):
+
+        return self._try(self.client.get_order_book, symbol=symbol, limit=limit)
