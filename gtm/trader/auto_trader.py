@@ -10,6 +10,8 @@ from ..data.config import Config
 from ..data.data import Data
 from ..scheduler import SafeScheduler
 
+
+import traceback
 import time
 import warnings
 
@@ -19,7 +21,7 @@ import asyncio as aio
 
 class AutoTrader:
     def __init__(self):
-        self.strategy = StreamStrategy(Data.bm)
+        self.strategy = StreamStrategy(limit=20)
         self.logger = Data.logger["server"]
         self.bm = Data.bm
         self.test_trader = AutoTestTrader(self.strategy)
@@ -31,7 +33,7 @@ class AutoTrader:
 
         api = Api(self.bm, self.logger)
 
-        explore = Explore(api, self.bm.client, self.logger)
+        explore = Explore(api, self.bm.client, self.logger, self.strategy)
 
         try:
             aio.run(
@@ -39,7 +41,9 @@ class AutoTrader:
             )
         except Exception as e:
 
-            self.logger.error(e)
+            exc = traceback.format_exc()
+
+            self.logger.error(exc)
 
     @aio.coroutine
     async def trade(self):
@@ -54,12 +58,17 @@ class AutoTrader:
 
                 self.test_trader.trade()
 
-            except BaseException:
-                break
-                # raise BaseException
+            except BaseException as e:
+
+                raise BaseException(e)
 
             except Exception:
-                raise Exception
+
+                exc = traceback.format_exc()
+
+                self.logger.error(exc)
+
+                await aio.sleep(1)
 
     def _init_spot(self):
 

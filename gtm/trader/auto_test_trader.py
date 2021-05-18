@@ -1,14 +1,12 @@
 from gtm.data.database.model.Coin import Coin
 from ..data.data import Data
 from ..strategies.stream_strategy import StreamStrategy
-from ..strategies.strategy_helper import get_candle_property
+from ..strategies.strategy_utils import get_candle_property
 from ..data.config import Config
 from ..data.database.model.Trade import Trade
 
-from ..strategies.helper import writeFile
 
 from datetime import datetime
-import traceback
 
 
 FEE = 99925 / 100000
@@ -17,6 +15,7 @@ FEE = 99925 / 100000
 class AutoTestTrader:
     def __init__(self, strategy: StreamStrategy):
         self.strategy = strategy
+        self.logger = Data.logger["trade"]
 
     def _buy(self, coin: Coin, price: int, amount: int):
 
@@ -62,14 +61,14 @@ class AutoTestTrader:
         Coin.wallet_sum()
 
         info = (
-            f"----------------------------------------------------\n"
+            "----------------------------------------------------\n"
             f"coin name : {coin.name} , type : BUY\n"
             f"coin amount : {a} , price : {price}, amount : {coin.amount}\n"
             f"Left bridge : {bridge.amount}\n"
-            f"BALANCE SUM : {Data.sow}"
+            f"BALANCE SUM : {Data.sow}\n"
         )
 
-        writeFile(info, "output")
+        self.logger.info(info)
 
         # Data.nh.send_notification(info)
 
@@ -138,14 +137,14 @@ class AutoTestTrader:
         Coin.wallet_sum()
 
         info = (
-            f"----------------------------------------------------\n"
+            "----------------------------------------------------\n"
             f"coin name : {coin.name} , type : SELL \n"
             f"total : {total} , price : {price}\n"
             f"amount : {amount}, left coin : {coin.amount}\n"
-            f"profit : {profit}, BALANCE SUM : {Data.sow}"
+            f"profit : {profit}, BALANCE SUM : {Data.sow}\n"
         )
 
-        writeFile(info, "output")
+        self.logger.info(info)
 
         # Data.nh.send_notification(info)
 
@@ -181,20 +180,20 @@ class AutoTestTrader:
 
         th = Data.th
 
-        signals = Data.signals
+        pod = Data.pod
 
         bridge_amount = spot[Config.BRIDGE].amount
 
         for pair in poc:
 
-            # pair analyzer and current buy&sell signal
-            signal = signals.get(pair)
-
-            if signal == None:
-                continue
-
             # dataframe of selected pair
             df = poc[pair]
+
+            if df.empty == True or pod.get(pair) == None:
+                continue
+
+            # generate signal value and calculate values of indicators
+            df, signal = self.strategy.ch3mGetSignal(df, pair)
 
             # candle_property = get_candle_property(df)
 
@@ -220,10 +219,7 @@ class AutoTestTrader:
                     total = amount * price
 
                     if total >= 10:
-                        try:
-                            self._sell(coin, price, amount, _id)
-                        except:
-                            traceback.print_exc()
+                        self._sell(coin, price, amount, _id)
 
             if signal == "BUY" and bridge_amount > 0:
 
@@ -231,18 +227,12 @@ class AutoTestTrader:
 
                 if amount >= 10:
 
-                    try:
-                        self._buy(coin, price, amount)
-                    except:
-                        traceback.print_exc()
+                    self._buy(coin, price, amount)
 
             if signal == "SELL" and coin.amount > 0:
 
                 total = coin.amount * price
-                
+
                 if total > 10:
 
-                    try:
-                        self._sell(coin, price, coin.amount)
-                    except:
-                        traceback.print_exc()
+                    self._sell(coin, price, coin.amount)

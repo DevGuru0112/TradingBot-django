@@ -1,6 +1,5 @@
 import pandas as pd
 import numpy as np
-from .analyzerUtils import AnalyzerUtils
 
 
 PERIOD_5 = 5
@@ -19,14 +18,10 @@ SHORT_TERM_PERIOD = 9
 MIN_PERIOD = 0
 
 
-class Indicators(AnalyzerUtils):
+class Indicators:
     def __init__(self, data):
 
-        if type(data) != pd.DataFrame:
-            self.data = data
-            self.df = self.convert_to_dataframe(data)
-        else:
-            self.df = data
+        self.df = data
 
     def calculate(
         self,

@@ -99,7 +99,7 @@ class Coin(Model):
     @staticmethod
     def wallet_sum(func=None, *args):
 
-        func(*args)
+        if func != None : func(*args)
 
         sow = 0
 
@@ -124,3 +124,5 @@ class Coin(Model):
                 sow += coin.amount * price
 
         Data.sow = sow
+
+        return sow
