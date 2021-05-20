@@ -28,6 +28,18 @@ class Explore:
 
     async def _candle_stick_data(self, fp: str, op: str):
 
+        """
+        It fetches candles and depth every second from stream API
+
+        @params :
+            - fp (str) : first part of stream subscribing
+            - op (str) : operation part (main part) 
+      
+        @returns :
+            - None
+
+        """
+
         url = "wss://stream.binance.com:9443/ws/"  # steam address
 
         async with websockets.connect(url + fp) as sock:
@@ -70,6 +82,7 @@ class Explore:
     async def scan_market(self, interval: str, func):
 
         """
+
         @asyncrhon_func
         This function brings together candles stream with candles analyzer&trader.
 
@@ -79,6 +92,7 @@ class Explore:
 
         @return
             - None
+
         """
 
         km = f"@kline_{interval}"
@@ -135,6 +149,17 @@ class Explore:
 
     def _get_multiple_candles(self, interval: str):
 
+        """
+        It gets current candles of given pairs from api
+
+        @params :
+            - interval (str) : fetched candle count
+
+        @returns :
+            - None
+
+        """
+
         candles = {}
 
         pairs = Config.PAIRS
@@ -171,6 +196,16 @@ class Explore:
         print("Order Books Loaded")
 
     def _update_dataframe(self, d: dict):
+
+        """
+        It merges pre_candles with last updated candle row (only one).
+        @params :
+            - d (dict) : updated_candle
+
+        @returns :
+            - None
+
+        """
 
         symbol = d["s"]
 
@@ -212,6 +247,17 @@ class Explore:
 
     def _update_depth(self, d: dict):
 
+        """
+        It merges new orderbook limits with pre_book.
+
+        @params :
+            - d (dict) : update_depth
+
+        @returns :
+            - None
+
+        """
+
         pair = d["s"]
         # check if the latest depth Infos overdate from 10 second
         pre_pod = Data.pod[pair]
@@ -221,25 +267,33 @@ class Explore:
 
         bids2 = _conv_df(d["b"])
         asks2 = _conv_df(d["a"])
-        
-        
+
         if bids2.empty:
             bids_new = bids1
-        else :     
-            bids_new = pd.concat([bids1,bids2]).drop_duplicates('price',keep='last').sort_values('price').reset_index()
-            bids_new.drop('index', axis=1, inplace=True)
-        
-        
+        else:
+
+            bids_new = (
+                pd.concat([bids1, bids2])
+                .drop_duplicates("price", keep="last")
+                .sort_values("price")
+                .reset_index()
+            )
+
+            bids_new.drop("index", axis=1, inplace=True)
+
         if asks2.empty:
             asks_new = asks1
-        else :     
-            asks_new = pd.concat([asks1,asks2]).drop_duplicates('price',keep='last').sort_values('price').reset_index()
-            asks_new.drop('index', axis=1, inplace=True)
+        else:
+
+            asks_new = (
+                pd.concat([asks1, asks2])
+                .drop_duplicates("price", keep="last")
+                .sort_values("price")
+                .reset_index()
+            )
+            asks_new.drop("index", axis=1, inplace=True)
 
         bids_new = bids_new[bids_new.quantity != 0].head(500)
         asks_new = asks_new[asks_new.quantity != 0].head(500)
-
-        
-        Data.podo[pair] = {"bids": bids2, "asks": asks2}
 
         Data.pod[pair] = {"bids": {"table": bids_new}, "asks": {"table": asks_new}}

@@ -22,11 +22,6 @@ def calc_depth_movement(pair: str):
 
     depth = Data.pod[pair]
 
-    diff_depth = Data.podo.get(pair)
-
-    if diff_depth == None:
-        return depth
-
     sensivity = Data.WALL_SENSIVITY
 
     bids = depth["bids"]["table"]
@@ -36,6 +31,10 @@ def calc_depth_movement(pair: str):
     sum_bids = bids["quantity"].sum()
 
     sum_asks = asks["quantity"].sum()
+    
+    dom_bids = sum_bids * 100 / (sum_bids+sum_asks)
+    
+    dom_asks = sum_asks * 100 / (sum_bids+sum_asks)
 
     avg_bids = bids["price"].sum() / sum_bids
 
@@ -49,20 +48,18 @@ def calc_depth_movement(pair: str):
         "bids": {
             "table": bids,
             "total": sum_bids,
+            "dominance": dom_bids,
             "avg": avg_bids,
             "walls": bid_walls,
         },
         "asks": {
             "table": asks,
             "total": sum_asks,
+            "dominance" : dom_asks,
             "avg": avg_asks,
             "walls": ask_walls,
         },
     }
-
-    if pair == "BNBUSDT":
-        print(f"ask_walls : {ask_walls}")
-        print(f"bid_walls : {bid_walls}")
 
     return depth
 

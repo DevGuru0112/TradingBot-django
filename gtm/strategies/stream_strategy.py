@@ -1,4 +1,4 @@
-from .analyzers.analyzer import analyze3m,analyze_depth
+from .analyzers.analyzer import analyze3m, analyze_depth
 from ..data.data import Data
 
 import pandas as pd
@@ -39,6 +39,9 @@ class StreamStrategy:
 
         score_diff = df["score"].diff().fillna(0)
 
+        aw = depth["20"]["asks_walls"]
+        bw = depth["20"]["bids_walls"]
+
         if rsi > 30 and rsi_score > 0 and macd_score > 0:
 
             # * If you divide your money into any piece of count. you can decrease your loss risk for "leverage" position.
@@ -46,10 +49,19 @@ class StreamStrategy:
             # * sometimes score can be negative
 
             if ema > sma1 and sma1_pre >= ema and score > 0 and score_diff[i] > 0:
-                signal = "BUY"
+
+                if aw == True and bw == False:
+                    signal = "BUY"
 
         if rsi >= 80 and rsi_score <= 0:
+
             signal = "SELL"
+
+        if rsi >= 75:
+
+            if aw == True:
+
+                signal == "SELL"
 
         if (
             sma1 > ema

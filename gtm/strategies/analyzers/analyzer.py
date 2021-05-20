@@ -1,10 +1,38 @@
+import pandas
 from .indicators import Indicators
 from ...data.data import Data
 from .analyzer_utils import calc_depth_movement
 
-def analyze_depth(pair):
+import pandas as pd
+
+
+def _wallchecker(df: pd.DataFrame, n=20):
+
+    wc = len(df[df.index <= n - 1])
+
+    if wc > 0:
+        return True
+
+    else:
+        return False
+
+
+def analyze_depth(pair, n=20):
 
     depth = calc_depth_movement(pair)
+
+    # ask walls & bids walls
+    aw = depth["asks"]["walls"]
+    bw = depth["bids"]["walls"]
+
+    if aw.shape[0] > 0:
+        # ask walls in 20
+        awi20 = _wallchecker(aw, n)
+    if aw.shape[0] > 0:
+        # bids walls in 20
+        bwi20 = _wallchecker(bw, n)
+
+    depth["20"] = {"asks_walls": awi20, "bids_walls": bwi20}
 
     return depth
 
@@ -188,6 +216,3 @@ def analyze3m(df):
         df["score"][i] = score
 
     return df
-
-
-
