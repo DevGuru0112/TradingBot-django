@@ -25,9 +25,12 @@ def analyze_depth(pair, n=20):
     aw = depth["asks"]["walls"]
     bw = depth["bids"]["walls"]
 
+    awi20, bwi20 = None, None
+    
     if aw.shape[0] > 0:
         # ask walls in 20
         awi20 = _wallchecker(aw, n)
+
     if aw.shape[0] > 0:
         # bids walls in 20
         bwi20 = _wallchecker(bw, n)

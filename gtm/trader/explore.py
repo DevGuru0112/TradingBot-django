@@ -1,11 +1,9 @@
 from binance.client import Client
-from ..data.logger import Logger
 from ..data.config import Config
 from ..api.api import Api
 from ..strategies.analyzers.analyzer_utils import convert_to_dataframe, _conv_df
 from ..data.data import Data
-
-from collections import Counter
+from gtm_notify.notify.logger import Logger
 from datetime import datetime
 
 import json
@@ -13,7 +11,6 @@ import websockets
 import asyncio as aio
 import pandas as pd
 import traceback
-import numpy as np
 
 
 class Explore:
@@ -33,8 +30,8 @@ class Explore:
 
         @params :
             - fp (str) : first part of stream subscribing
-            - op (str) : operation part (main part) 
-      
+            - op (str) : operation part (main part)
+
         @returns :
             - None
 

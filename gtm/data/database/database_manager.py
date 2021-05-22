@@ -1,11 +1,8 @@
 from pymongo import MongoClient
 from pymongo.errors import *
 from ..config import Config
-from pprint import pprint
-from ..logger import Logger
 from ..data import Data
 import traceback
-
 
 
 

@@ -15,6 +15,9 @@ class Config:
 
     LOSS = 0
 
+    INSTAGRAM = {}
+
+
     @staticmethod
     def read_config():
 
@@ -26,3 +29,4 @@ class Config:
         Config.PAIRS = config["PAIRS"].split()
         Config.BRIDGE = config["BRIDGE"]
         Config.LOSS = config["LOSS"]
+        Config.INSTAGRAM = config["INSTAGRAM"]

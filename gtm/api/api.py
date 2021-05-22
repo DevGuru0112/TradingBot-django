@@ -2,10 +2,10 @@ from .binance_api_manager import Binance_API_Manager
 from binance.exceptions import BinanceAPIException
 from ..data.database.model.Coin import Coin
 from ..data.database.model.Trade import Trade
-from ..data.logger import Logger
 from ..data.config import Config
-
 from ..data.data import Data
+from gtm_notify.notify.logger import Logger
+
 
 import time
 
