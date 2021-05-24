@@ -1,9 +1,9 @@
-from datetime import datetime
-from os import sep
 from .Model import Model
 from .Coin import Coin
 from ...data import Data
 from ...config import Config
+
+import time
 
 pos_fee = 0.99925  # 0.075 fee
 
@@ -35,11 +35,7 @@ class Trade(Model):
         self.amount = amount
         self.buy_price = buy_price
 
-        self.buy_time = (
-            buy_time
-            if buy_time != None
-            else datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        )
+        self.buy_time = buy_time if buy_time != None else time.time()
 
         self.sell_time = sell_time
         self.sell_price = sell_price
@@ -64,7 +60,7 @@ class Trade(Model):
 
         self.result = self.amount * sell_price * pos_fee
 
-        self.sell_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        self.sell_time = time.time()
 
         self.profit = (
             self.calculate_profit(self.buy_price, sell_price)
@@ -95,7 +91,7 @@ class Trade(Model):
         return self
 
     @staticmethod
-    def get_all_history():
+    def get_all_history(query={}):
 
         """
         This function gets all trades from database. Then , creates instances of these trades and returns
@@ -106,7 +102,7 @@ class Trade(Model):
             - list : (an array which is inside Trades)
         """
 
-        cursor = Trade.get_all()
+        cursor = Trade.get_all(query)
 
         th_list = Trade.from_jsons(cursor)
 

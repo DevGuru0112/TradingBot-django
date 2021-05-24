@@ -25,6 +25,6 @@ class Server:
 
         trader = AutoTrader()
 
-        print("Server Started\n")
+        print("Server Started")
 
         trader.start()

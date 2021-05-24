@@ -12,7 +12,6 @@ class Model:
         self.spot_wallet = self.db["spot_wallet"]
         self.trade_history = self.db["trade_history"]
 
-
     def insert(self):
         pass
 
@@ -60,7 +59,7 @@ class Model:
             return None
 
     @classmethod
-    def get_all(cls):
+    def get_all(cls, query={}):
 
         """
         This function changes pre-object which is on database with new object.
@@ -74,7 +73,7 @@ class Model:
 
         col = Model().__getattribute__(column_name)
 
-        all_docs = col.find()
+        all_docs = col.find(query)  
 
         return all_docs
 

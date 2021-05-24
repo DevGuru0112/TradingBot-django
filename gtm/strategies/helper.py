@@ -1,5 +1,5 @@
 import pandas as pd
-
+from datetime import datetime, date, timedelta
 
 output_dir = "output/"
 
@@ -34,4 +34,12 @@ def writeExcel(df: pd.DataFrame):
     df.to_excel(writer, "trade")
     # save the excel file
     writer.save()
-    print("DataFrame is written successfully to Excel Sheet.")
+
+
+def tomorrow():
+
+    # today + 1 day = tomorrow (datetime.date) # extra 5 seconds for computation
+    tomorrow = date.today() + timedelta(days=1, seconds=5)
+
+    # convert datetime.date => datetime.datetime
+    return datetime.combine(tomorrow, datetime.min.time())

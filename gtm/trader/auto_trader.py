@@ -1,4 +1,3 @@
-from traceback import print_exc
 from ..api.api import Api
 from ..strategies.stream_strategy import StreamStrategy
 from .explore import Explore
@@ -8,7 +7,6 @@ from ..data.database.model.Trade import Trade
 from ..data.database.model.Coin import Coin
 from ..data.config import Config
 from ..data.data import Data
-from ..scheduler import SafeScheduler
 
 
 import traceback
@@ -36,10 +34,8 @@ class AutoTrader:
         explore = Explore(api, self.bm.client, self.logger, self.strategy)
 
         try:
-            aio.run(
-                explore.scan_market(self.bm.client.KLINE_INTERVAL_3MINUTE, self.trade)
-            )
-        except Exception as e:
+            aio.run(explore.start(self.bm.client.KLINE_INTERVAL_3MINUTE, self.trade))
+        except Exception:
 
             exc = traceback.format_exc()
 

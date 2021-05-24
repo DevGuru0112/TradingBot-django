@@ -1,13 +1,12 @@
 from gtm.data.database.model.Coin import Coin
 from ..data.data import Data
 from ..strategies.stream_strategy import StreamStrategy
-from ..strategies.strategy_utils import get_candle_property
 from ..data.config import Config
 from ..data.database.model.Trade import Trade
 
 
 from datetime import datetime
-
+import time
 
 FEE = 99925 / 100000
 
@@ -37,9 +36,9 @@ class AutoTestTrader:
 
         bridge = Data.spot[Config.BRIDGE]
 
-        time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        buy_time = time.time()
 
-        trade = Trade(None, Config.BRIDGE, coin.name, a, price, time)
+        trade = Trade(None, Config.BRIDGE, coin.name, a, price, buy_time)
 
         trade.insert()
 
@@ -70,7 +69,7 @@ class AutoTestTrader:
 
         self.logger.info(info)
 
-        # Data.nh.send_notification(info)
+        Data.nh.send_notification(info)
 
     def _sell(self, coin, price: int, amount: int, _id=None):
 
@@ -146,7 +145,7 @@ class AutoTestTrader:
 
         self.logger.info(info)
 
-        # Data.nh.send_notification(info)
+        Data.nh.send_notification(info)
 
     def trade(self):
 

@@ -4,13 +4,17 @@ from ..api.api import Api
 from ..strategies.analyzers.analyzer_utils import convert_to_dataframe, _conv_df
 from ..data.data import Data
 from gtm_notify.notify.logger import Logger
-from datetime import datetime
+from .stats import Stats
 
+from ..strategies.helper import tomorrow
+
+from datetime import datetime
 import json
 import websockets
 import asyncio as aio
 import pandas as pd
 import traceback
+import time
 
 
 class Explore:
@@ -38,45 +42,48 @@ class Explore:
         """
 
         url = "wss://stream.binance.com:9443/ws/"  # steam address
+        for i in range(20):
+            try:
+                async with websockets.connect(url + fp) as sock:
 
-        async with websockets.connect(url + fp) as sock:
+                    await sock.send(op)
 
-            await sock.send(op)
+                    while True:
 
-            while True:
+                        try:
+                            resp = await sock.recv()
 
-                try:
-                    resp = await sock.recv()
+                            if "result" in resp:
+                                continue
 
-                    if "result" in resp:
-                        continue
+                            resp = json.loads(resp)
 
-                    resp = json.loads(resp)
+                            if resp.get("e") == "depthUpdate":
 
-                    if resp.get("e") == "depthUpdate":
+                                self._update_depth(resp)
 
-                        self._update_depth(resp)
+                            elif resp.get("e") == "kline":
 
-                    elif resp.get("e") == "kline":
+                                kline = resp["k"]
 
-                        kline = resp["k"]
+                                self._update_dataframe(kline)
 
-                        self._update_dataframe(kline)
+                        except BaseException as e:
 
-                except BaseException as e:
+                            raise BaseException(e)
 
-                    raise BaseException(e)
+                        except Exception as e:
 
-                except Exception as e:
+                            exc = traceback.format_exc()
+                            self.logger.error(exc)
 
-                    exc = traceback.format_exc()
-                    self.logger.error(exc)
+                            break
 
-                    break
+                    await sock.close()
+            except ConnectionResetError:
+                time.sleep(1)
 
-            await sock.close()
-
-    async def scan_market(self, interval: str, func):
+    async def start(self, interval: str, func):
 
         """
 
@@ -92,21 +99,7 @@ class Explore:
 
         """
 
-        km = f"@kline_{interval}"
-
-        dm = "@depth"
-
-        pairs = [p.lower() + km for p in Config.PAIRS]
-
-        depths = [p.lower() + dm for p in Config.PAIRS]
-
-        fp = pairs[0]
-
-        op = pairs[1:] + depths
-
-        d = {"method": "SUBSCRIBE", "params": op, "id": 1}
-
-        op = json.dumps(d)
+        fp, lp = self._generate_socket_payload(interval)
 
         self._get_multiple_candles(interval)
 
@@ -114,15 +107,20 @@ class Explore:
 
         loop = aio.get_event_loop()
 
+        stats = Stats()
+
+        run_time = tomorrow()
+
         tasks = [
             aio.create_task(func()),
-            aio.create_task(self._candle_stick_data(fp, op)),
+            aio.create_task(self._candle_stick_data(fp, lp)),
+            aio.create_task(Stats.run_at_and_forever(run_time, stats.daily_stats)),
         ]
 
         try:
             await aio.gather(*tasks)
 
-        except BaseException as e:
+        except BaseException:
 
             exc = traceback.format_exc()
 
@@ -294,3 +292,21 @@ class Explore:
         asks_new = asks_new[asks_new.quantity != 0].head(500)
 
         Data.pod[pair] = {"bids": {"table": bids_new}, "asks": {"table": asks_new}}
+
+    def _generate_socket_payload(self, interval):
+
+        km = f"@kline_{interval}"
+
+        dm = "@depth"
+
+        pairs = [p.lower() + km for p in Config.PAIRS]
+
+        depths = [p.lower() + dm for p in Config.PAIRS]
+
+        fp = pairs[0]
+
+        op = pairs[1:] + depths
+
+        lp = json.dumps({"method": "SUBSCRIBE", "params": op, "id": 1})
+
+        return fp, lp
