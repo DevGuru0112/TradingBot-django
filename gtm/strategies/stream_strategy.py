@@ -44,46 +44,41 @@ class StreamStrategy:
         aw = depth["20"]["asks_walls"]
         bw = depth["20"]["bids_walls"]
 
-        # if rsi > 30 and rsi_score > 0 and macd_score > 0:
+        if rsi > 30 and rsi_score > 0 and macd_score > 0:
 
-        #     # * If you divide your money into any piece of count. you can decrease your loss risk for "leverage" position.
+            # * If you divide your money into any piece of count. you can decrease your loss risk for "leverage" position.
 
-        #     # * sometimes score can be negative
+            # * sometimes score can be negative
 
-        #     if ema > sma1 and sma1_pre >= ema and score > 0 and score_diff[i] > 0:
+            if ema > sma1 and sma1_pre >= ema and score > 0 and score_diff[i] > 0:
 
-        #         if aw == True and bw == False:
-        #             signal = "BUY"
+                if aw == True and bw == False:
+                    signal = "BUY"
 
-        # if rsi >= 80 and rsi_score <= 0:
+        if rsi >= 80 and rsi_score <= 0:
 
-        #     signal = "SELL"
-
-        # if rsi >= 75:
-
-        #     if aw == True:
-
-        #         signal == "SELL"
-
-        # if (
-        #     sma1 > ema
-        #     and sma1_pre <= ema_pre
-        #     and macd_score < 0
-        #     and score < -10
-        #     and (cci_score < 0 or rsi_score < 0)
-        # ):
-        #     signal = "SELL"
-
-        # if rsi >= 70 and rsi_score <= 0 and macd_score <= 0:
-
-        #     signal = "SELL"
-
-        
-        if rsi_score < 0:
             signal = "SELL"
 
-        else:
-            signal = "BUY"
+        if rsi >= 75:
+
+            if aw == True:
+
+                signal == "SELL"
+
+        if (
+            sma1 > ema
+            and sma1_pre <= ema_pre
+            and macd_score < 0
+            and score < -10
+            and (cci_score < 0 or rsi_score < 0)
+        ):
+            signal = "SELL"
+
+        if rsi >= 70 and rsi_score <= 0 and macd_score <= 0:
+
+            signal = "SELL"
+
+        
 
 
         Data.poc[symbol] = df
