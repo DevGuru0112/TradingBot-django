@@ -16,13 +16,21 @@ class Stats:
         self.image_conv = ImageConv()
         self.logger = Data.logger["server"]
 
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+    #                   WAIT UNTIL
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+
     @staticmethod
     async def wait_until(dt):
         # sleep until specified time
 
         now = datetime.now()
         return await aio.sleep((dt - now).total_seconds())
-
+    
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+    #                  RUN AT FOREVER
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+    
     @staticmethod
     async def run_at_and_forever(dt, coro):
 
@@ -45,7 +53,11 @@ class Stats:
                 exc = traceback.format_exc()
                 Data.logger["server"].error(exc)
                 time.sleep(1)
-
+    
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+    #                 DAILY STATS
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+    
     def daily_stats(self):
         
         today_date = date.today()
@@ -79,6 +91,10 @@ class Stats:
                 exc = traceback.format_exc()
                 self.logger.error(exc)
                 time.sleep(1)
+
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+    #                 GENERATE CAPTION
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
 
     def _generate_caption(self, date):
         caption =  f"Daily Trading 🚀 on {date.strftime('%d, %b %Y')} 📅\n\n\n\n\n\

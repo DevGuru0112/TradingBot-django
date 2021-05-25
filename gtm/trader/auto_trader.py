@@ -25,6 +25,10 @@ class AutoTrader:
         self.test_trader = AutoTestTrader(self.strategy)
         self._init_spot()
 
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+    #                START AUTO TRADER
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+
     def start(self):
 
         warnings.simplefilter(action="ignore", category=SettingWithCopyWarning)
@@ -35,11 +39,17 @@ class AutoTrader:
 
         try:
             aio.run(explore.start(self.bm.client.KLINE_INTERVAL_3MINUTE, self.trade))
+        
         except Exception:
 
             exc = traceback.format_exc()
 
             self.logger.error(exc)
+
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+    #                       TRADE
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+
 
     @aio.coroutine
     async def trade(self):
@@ -54,9 +64,9 @@ class AutoTrader:
 
                 self.test_trader.trade()
 
-            except BaseException as e:
-
-                raise BaseException(e)
+            except KeyboardInterrupt:
+                
+                raise KeyboardInterrupt
 
             except Exception:
 
@@ -65,6 +75,12 @@ class AutoTrader:
                 self.logger.error(exc)
 
                 await aio.sleep(1)
+
+
+    
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+    #                INITIALIZE SPOT
+    # = = = = = = = = = = = = = = = = = = = = = = = = = = 
 
     def _init_spot(self):
 

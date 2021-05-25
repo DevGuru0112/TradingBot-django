@@ -14,6 +14,10 @@ class Coin(Model):
         self.amount = amount
         self.open_trades = open_trades
 
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+    #                      GET COIN
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+
     @staticmethod
     def get(coin_name):
         """
@@ -32,6 +36,10 @@ class Coin(Model):
             return None
         else:
             return Coin.from_json(coin)
+
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+    #                   INSERT COIN
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
 
     def insert(self):
 
@@ -58,6 +66,10 @@ class Coin(Model):
 
         return self
 
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+    #               GET ALL COINS (SPOT)
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+
     @staticmethod
     def get_spot():
 
@@ -78,12 +90,20 @@ class Coin(Model):
 
         return spot_dict
 
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+    #             GENEREATE A JSON FROM COIN
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+
     def to_json(self):
         return {
             "name": self.name,
             "amount": self.amount,
             "open_trades": self.open_trades,
         }
+
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+    #                  GENERATE A PAIR
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
 
     def generate_pair(self, parity):
         """
@@ -96,17 +116,22 @@ class Coin(Model):
         """
         return self.name + parity
 
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+    #                CALCULATE WALLET SUM
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+
     @staticmethod
     def wallet_sum(func=None, *args):
 
-        if func != None : func(*args)
+        if func != None:
+            func(*args)
 
         sow = 0
 
         for cn in Data.spot:
-            
+
             coin = Data.spot[cn]
-            
+
             if cn != Config.BRIDGE:
 
                 pair = cn + Config.BRIDGE

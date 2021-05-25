@@ -42,6 +42,10 @@ class Trade(Model):
         self.result = result
         self.profit = profit
 
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+    #                    SELL COIN
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+
     def sell(self, sell_price):
 
         """
@@ -70,8 +74,16 @@ class Trade(Model):
 
         return self
 
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+    #                  CALCULATE PROFIT
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+
     def calculate_profit(self, buy, sell):
         return ((sell * pos_fee - buy * pob_fee) / buy) * 100
+
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+    #                   INSERT TRADE
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
 
     def insert(self):
 
@@ -89,6 +101,10 @@ class Trade(Model):
         self.id = self.trade_history.insert_one(dict_form).inserted_id
 
         return self
+
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+    #                GET ALL TRADE HISTORY
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
 
     @staticmethod
     def get_all_history(query={}):
@@ -108,6 +124,10 @@ class Trade(Model):
 
         return {str(th.id): th for th in th_list}
 
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+    #                 GET A TRADE HISTORY
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+
     @staticmethod
     def get():
         """
@@ -123,6 +143,10 @@ class Trade(Model):
         coin = Model.get(query_dict, "trade_history")
         return Trade.from_json(coin)
 
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+    #             GENERATE A JSON FROM TRADE
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+
     def to_json(self):
 
         return {
@@ -136,6 +160,10 @@ class Trade(Model):
             "result": self.result,
             "profit": self.profit,
         }
+
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+    #          CALCULATE AVAILABLE BRIDGE AMOUNT
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
 
     @staticmethod
     def available_bridge(coin: Coin):

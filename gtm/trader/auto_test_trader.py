@@ -16,6 +16,11 @@ class AutoTestTrader:
         self.strategy = strategy
         self.logger = Data.logger["trade"]
 
+    
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+    #                      BUY
+    # = = = = = = = = = = = = = = = = = = = = = = = = = = 
+
     def _buy(self, coin: Coin, price: int, amount: int):
 
         """
@@ -70,6 +75,11 @@ class AutoTestTrader:
         self.logger.info(info)
 
         Data.nh.send_notification(info)
+
+
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+    #                        SELL
+    # = = = = = = = = = = = = = = = = = = = = = = = = = = 
 
     def _sell(self, coin, price: int, amount: int, _id=None):
 
@@ -146,6 +156,11 @@ class AutoTestTrader:
         self.logger.info(info)
 
         Data.nh.send_notification(info)
+
+
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+    #                 TRADING WITH PAIR 
+    # = = = = = = = = = = = = = = = = = = = = = = = = = = 
 
     def trade(self):
 

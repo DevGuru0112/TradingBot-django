@@ -12,6 +12,12 @@ class StreamStrategy:
         self.limit = limit
         self.logger = Data.logger["server"]
 
+    
+
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+    #                GET 3M - CANDLE SIGNAL
+    # = = = = = = = = = = = = = = = = = = = = = = = = = = 
+
     def ch3mGetSignal(self, df: pd.DataFrame, symbol: str):
 
         signal = None

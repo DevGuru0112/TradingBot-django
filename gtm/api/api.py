@@ -22,6 +22,10 @@ class Api:
         self.client = client.client
         self.logger = logger
 
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+    #                   GET CANDLES
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+
     def get_candles(
         self,
         symbol: str,
@@ -31,6 +35,10 @@ class Api:
         return self._try(
             self.client.get_klines, symbol=symbol, limit=limit, interval=interval
         )
+
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+    #                   GET PRICE
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
 
     def _get_price(self, symbol: str, isBuy: bool):
 
@@ -47,6 +55,10 @@ class Api:
         obt = self.client.get_orderbook_ticker(symbol=symbol)
 
         return obt["askPrice"] if isBuy else obt["bidPrice"]
+
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+    #                   ORDER CHECKER
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
 
     def _order_checker(self, symbol: str, order_id: int):
 
@@ -74,6 +86,10 @@ class Api:
             except Exception as e:
                 self.logger.error(f"Unexpected error : {e}")
                 time.sleep(1)
+
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+    #                   TRY X TIMES
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
 
     def _try(self, func, max_attempts=10, *args, **kwargs):
 
@@ -106,6 +122,10 @@ class Api:
                 attempts += 1
 
         return None
+
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+    #                 QUICK LIMIT ORDER
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
 
     def _quick_limit_order(self, func, symbol: str, coin: Coin):
 
@@ -140,6 +160,10 @@ class Api:
                 time.sleep(1)
 
         return order
+
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+    #                     BUY COIN
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
 
     def buy(self, coin: Coin):
 
@@ -179,6 +203,10 @@ class Api:
         parity.amount = 0
 
         self._save_trade_action(trade, coin, parity)
+
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+    #                   SELL COIN
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
 
     def sell(self, coin: Coin, trade_id: int):
 
@@ -222,6 +250,10 @@ class Api:
 
         self._save_trade_action(trade, coin, parity)
 
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+    #                SAVE TRADE ACTION
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+
     def _save_trade_action(self, trade: Trade, coin: Coin, parity: Coin):
 
         """
@@ -242,6 +274,10 @@ class Api:
         Data.th[trade.id] = trade
         Data.spot[coin.name] = coin
         Data.spot[Config.BRIDGE] = parity
+
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+    #                 GET ORDER BOOK
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
 
     def _get_order_book(self, symbol: str, limit=500):
 

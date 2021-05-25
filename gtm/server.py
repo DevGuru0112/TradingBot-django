@@ -10,7 +10,7 @@ from gtm_notify.notify.notify import Notify
 class Server:
     def __init__(self):
         pass
-
+    
     def start(self):
         C.read_config()
 
@@ -25,6 +25,6 @@ class Server:
 
         trader = AutoTrader()
 
-        print("Server Started")
+        Data.logger["server"].info("Server Started")
 
         trader.start()

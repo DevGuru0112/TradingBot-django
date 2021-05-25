@@ -4,6 +4,11 @@ from datetime import datetime, date, timedelta
 output_dir = "output/"
 
 
+# = = = = = = = = = = = = = = = = = = = = = = = = = =
+#            STRING ARRAY TO INT ARRAY 2D
+# = = = = = = = = = = = = = = = = = = = = = = = = = =
+
+
 def strArrToIntArr_2d(s_arr: list):
 
     # This function convert 2d str array to 2d int array
@@ -26,6 +31,11 @@ def strArrToIntArr_2d(s_arr: list):
     return ml
 
 
+# = = = = = = = = = = = = = = = = = = = = = = = = = =
+#                   WRITE EXCEL
+# = = = = = = = = = = = = = = = = = = = = = = = = = =
+
+
 def writeExcel(df: pd.DataFrame):
     # create excel writer
 
@@ -34,6 +44,11 @@ def writeExcel(df: pd.DataFrame):
     df.to_excel(writer, "trade")
     # save the excel file
     writer.save()
+
+
+# = = = = = = = = = = = = = = = = = = = = = = = = = =
+#                     TOMORROW
+# = = = = = = = = = = = = = = = = = = = = = = = = = =
 
 
 def tomorrow():

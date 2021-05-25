@@ -12,8 +12,16 @@ class Model:
         self.spot_wallet = self.db["spot_wallet"]
         self.trade_history = self.db["trade_history"]
 
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+    #            INSERT MODEL TO DATABASE
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+
     def insert(self):
         pass
+
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+    #                     GET MODEL
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
 
     @staticmethod
     def get(query, col):
@@ -32,8 +40,16 @@ class Model:
 
         return query_result
 
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+    #                  GENERATE A JSON
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+
     def to_json(self):
         return json.dumps(self.__dict__)
+
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+    #                    SAVE MODEL
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
 
     def save(self):
 
@@ -58,6 +74,10 @@ class Model:
         except:
             return None
 
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+    #                  GET ALL MODELS
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+
     @classmethod
     def get_all(cls, query={}):
 
@@ -73,9 +93,13 @@ class Model:
 
         col = Model().__getattribute__(column_name)
 
-        all_docs = col.find(query)  
+        all_docs = col.find(query)
 
         return all_docs
+
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+    #            GENERATE A INSTANCE FROM JSON
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
 
     @classmethod
     def from_json(cls, cursor):
@@ -99,6 +123,10 @@ class Model:
         json_data["_id"] = json_data["_id"]["$oid"]
 
         return cls(**json_data)
+
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+    #       GENERATE MULTIPLE INSTANCES FROM JSONS
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
 
     @classmethod
     def from_jsons(cls, cursor):

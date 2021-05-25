@@ -1,20 +1,23 @@
 from binance.client import Client
 from ..data.config import Config
 from ..api.api import Api
-from ..strategies.analyzers.analyzer_utils import convert_to_dataframe, _conv_df
+from ..strategies.analyzers.analyzer_utils import convert_to_dataframe, conv_df
 from ..data.data import Data
 from gtm_notify.notify.logger import Logger
 from .stats import Stats
-
 from ..strategies.helper import tomorrow
 
+
+from asyncio.exceptions import CancelledError
 from datetime import datetime
+from websockets.exceptions import ConnectionClosedError
+
 import json
 import websockets
 import asyncio as aio
+import time
 import pandas as pd
 import traceback
-import time
 
 
 class Explore:
@@ -27,7 +30,11 @@ class Explore:
         self.api = api
         self.strategy = strategy
 
-    async def _candle_stick_data(self, fp: str, op: str):
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+    #                   GET STREAM DATA
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+
+    async def _get_stream_data(self, fp: str, op: str):
 
         """
         It fetches candles and depth every second from stream API
@@ -42,16 +49,34 @@ class Explore:
         """
 
         url = "wss://stream.binance.com:9443/ws/"  # steam address
-        for i in range(20):
-            try:
-                async with websockets.connect(url + fp) as sock:
 
-                    await sock.send(op)
+        async with websockets.connect(url + fp) as sock:
 
-                    while True:
+            await sock.send(op)
 
-                        try:
-                            resp = await sock.recv()
+            while True:
+
+                while not sock.open:
+
+                    try:
+
+                        self.logger.info("Websocket is NOT Connected. Reconnecting...")
+
+                        sock = await websockets.connect(url + fp)
+
+                        await sock.send(op)
+
+                        self.logger.info("Websocket is Connected")
+
+                    except:
+
+                        self.logger.info("Unable to reconnect, trying again")
+                        time.sleep(1)
+                try:
+
+                    async for resp in sock:
+
+                        if resp is not None:
 
                             if "result" in resp:
                                 continue
@@ -66,22 +91,24 @@ class Explore:
 
                                 kline = resp["k"]
 
-                                self._update_dataframe(kline)
+                                self._update_candle(kline)
 
-                        except BaseException as e:
+                except KeyboardInterrupt:
 
-                            raise BaseException(e)
+                    raise KeyboardInterrupt
 
-                        except Exception as e:
+                except ConnectionClosedError:
+                    self.logger.info("Connection is closed suddenly. Reconnecting...")
+                
+                except Exception as e:
 
-                            exc = traceback.format_exc()
-                            self.logger.error(exc)
+                    exc = traceback.format_exc()
+                    self.logger.error(exc)
+                    self.logger.error(e)
 
-                            break
-
-                    await sock.close()
-            except ConnectionResetError:
-                time.sleep(1)
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+    #               START MULTPPAIR PROCESS
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
 
     async def start(self, interval: str, func):
 
@@ -101,11 +128,13 @@ class Explore:
 
         fp, lp = self._generate_socket_payload(interval)
 
-        self._get_multiple_candles(interval)
+        self._get_pairs_candles(interval)
 
         self._get_pairs_orderbooks()
 
         loop = aio.get_event_loop()
+
+        future = aio.Future()
 
         stats = Stats()
 
@@ -113,36 +142,34 @@ class Explore:
 
         tasks = [
             aio.create_task(func()),
-            aio.create_task(self._candle_stick_data(fp, lp)),
+            aio.create_task(self._get_stream_data(fp, lp)),
             aio.create_task(Stats.run_at_and_forever(run_time, stats.daily_stats)),
         ]
 
         try:
             await aio.gather(*tasks)
 
-        except BaseException:
+        except CancelledError:
+            future.set_result("stop")
 
-            exc = traceback.format_exc()
-
-            self.logger.info(exc)
-
-        except Exception as e:
+        except Exception:
 
             exc = traceback.format_exc()
 
             self.logger.error(exc)
 
-            aio.sleep(1)
-
         finally:
 
             for task in tasks:
-
                 task.cancel()
 
-            loop.stop()
+            self.logger.info("All Task Concluded.")
 
-    def _get_multiple_candles(self, interval: str):
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+    #                  GET PAIRS CANDLES
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+
+    def _get_pairs_candles(self, interval: str):
 
         """
         It gets current candles of given pairs from api
@@ -171,7 +198,11 @@ class Explore:
 
         Data.poc = candles
 
-        print("Candles Loaded")
+        self.logger.info("Candles Loaded")
+
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+    #                 GET PAIRS ORDERBOOKS
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
 
     def _get_pairs_orderbooks(self):
 
@@ -181,16 +212,20 @@ class Explore:
 
             ob = self.api._get_order_book(pair, limit=1000)
 
-            bids = _conv_df(ob["bids"])
-            asks = _conv_df(ob["asks"])
+            bids = conv_df(ob["bids"])
+            asks = conv_df(ob["asks"])
 
             ob = {"bids": {"table": bids}, "asks": {"table": asks}}
 
             Data.pod[pair] = ob
 
-        print("Order Books Loaded")
+        self.logger.info("Order Books Loaded")
 
-    def _update_dataframe(self, d: dict):
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+    #                 UPDATE CANDLES
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+
+    def _update_candle(self, d: dict):
 
         """
         It merges pre_candles with last updated candle row (only one).
@@ -240,6 +275,10 @@ class Explore:
 
         Data.poc[symbol] = df
 
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+    #                 UPDATE DEPTHS
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+
     def _update_depth(self, d: dict):
 
         """
@@ -260,8 +299,8 @@ class Explore:
         bids1 = pre_pod["bids"]["table"]
         asks1 = pre_pod["asks"]["table"]
 
-        bids2 = _conv_df(d["b"])
-        asks2 = _conv_df(d["a"])
+        bids2 = conv_df(d["b"])
+        asks2 = conv_df(d["a"])
 
         if bids2.empty:
             bids_new = bids1
@@ -292,6 +331,10 @@ class Explore:
         asks_new = asks_new[asks_new.quantity != 0].head(500)
 
         Data.pod[pair] = {"bids": {"table": bids_new}, "asks": {"table": asks_new}}
+
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
+    #              GENERATE SOCKET PAYLOAD
+    # = = = = = = = = = = = = = = = = = = = = = = = = = =
 
     def _generate_socket_payload(self, interval):
 

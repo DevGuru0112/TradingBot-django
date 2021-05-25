@@ -6,6 +6,10 @@ from datetime import datetime
 import pandas as pd
 import numpy as np
 
+# = = = = = = = = = = = = = = = = = = = = = = = = = =
+#              CALCULATE DEPTH MOVEMENT
+# = = = = = = = = = = = = = = = = = = = = = = = = = =
+
 
 def calc_depth_movement(pair: str):
 
@@ -31,10 +35,10 @@ def calc_depth_movement(pair: str):
     sum_bids = bids["quantity"].sum()
 
     sum_asks = asks["quantity"].sum()
-    
-    dom_bids = sum_bids * 100 / (sum_bids+sum_asks)
-    
-    dom_asks = sum_asks * 100 / (sum_bids+sum_asks)
+
+    dom_bids = sum_bids * 100 / (sum_bids + sum_asks)
+
+    dom_asks = sum_asks * 100 / (sum_bids + sum_asks)
 
     avg_bids = bids["price"].sum() / sum_bids
 
@@ -55,13 +59,18 @@ def calc_depth_movement(pair: str):
         "asks": {
             "table": asks,
             "total": sum_asks,
-            "dominance" : dom_asks,
+            "dominance": dom_asks,
             "avg": avg_asks,
             "walls": ask_walls,
         },
     }
 
     return depth
+
+
+# = = = = = = = = = = = = = = = = = = = = = = = = = =
+#                CONVERT TO DATAFRAME
+# = = = = = = = = = = = = = = = = = = = = = = = = = =
 
 
 def convert_to_dataframe(hd):
@@ -103,8 +112,11 @@ def convert_to_dataframe(hd):
 
     return df
 
+# = = = = = = = = = = = = = = = = = = = = = = = = = =
+#            CONVERT DATAFRAME
+# = = = = = = = = = = = = = = = = = = = = = = = = = =
 
-def _conv_df(arr):
+def conv_df(arr):
     """
     it transform array to pandas Dataframe
 
